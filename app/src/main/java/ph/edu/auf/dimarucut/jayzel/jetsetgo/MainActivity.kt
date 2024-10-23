@@ -5,6 +5,8 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -17,22 +19,26 @@ import androidx.compose.ui.unit.dp
 import ph.edu.auf.dimarucut.jayzel.jetsetgo.models.*
 import ph.edu.auf.dimarucut.jayzel.jetsetgo.ui.theme.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.sp
-import java.util.UUID
+import ph.edu.auf.dimarucut.jayzel.jetsetgo.ui.theme.JetSetGoTheme
+import ph.edu.auf.dimarucut.jayzel.jetsetgo.models.BudgetDetails
+import ph.edu.auf.dimarucut.jayzel.jetsetgo.models.Trip
 
 
 class MainActivity : ComponentActivity() {
+
     private val tripViewModel: TripViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            JetSetGoTheme {
-                MainScreen(tripViewModel)
-            }
+
+            MainScreen(tripViewModel = tripViewModel)
         }
     }
 }
@@ -40,7 +46,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MainScreen(tripViewModel: TripViewModel) {
     var selectedItem by remember { mutableStateOf(0) }
-    val items = listOf("Home", "Flights", "Hotels", "Activities")
+    val items = listOf("HOME", "FLIGHTS", "HOTELS", "ACTIVITIES")
     val icons = listOf(
         R.drawable.home_icon,
         R.drawable.flight_icon,
@@ -54,14 +60,18 @@ fun MainScreen(tripViewModel: TripViewModel) {
                 containerColor = DenimBlue,
                 tonalElevation = 5.dp,
                 modifier = Modifier
-                    .padding(16.dp)
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
                     .clip(RoundedCornerShape(30.dp))
                     .height(56.dp)
             ) {
                 items.forEachIndexed { index, item ->
                     NavigationBarItem(
                         icon = {
-                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.Center,
+                                modifier = Modifier.padding(8.dp)
+                            ) {
                                 Icon(
                                     painter = painterResource(id = icons[index]),
                                     contentDescription = null,
@@ -71,7 +81,9 @@ fun MainScreen(tripViewModel: TripViewModel) {
                                 if (selectedItem == index) {
                                     Text(
                                         text = item,
-                                        style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp)
+                                        fontSize = 14.sp,
+                                        fontFamily = PaytoneOne,
+                                        color = Color.White
                                     )
                                 }
                             }
@@ -92,147 +104,73 @@ fun MainScreen(tripViewModel: TripViewModel) {
             }
         }
     ) { innerPadding ->
-        when (selectedItem) {
-            0 -> HomeScreen(tripViewModel, Modifier.padding(innerPadding))
-            1 -> FlightsScreen(tripViewModel,Modifier.padding(innerPadding))
-            2 -> HotelsScreen(Modifier.padding(innerPadding))
-            3 -> ActivitiesScreen(Modifier.padding(innerPadding))
+        Box(modifier = Modifier.padding(innerPadding)) {
+            when (selectedItem) {
+                0 -> HomeScreen()
+                1 -> FlightsScreen(tripViewModel)
+                2 -> HotelsScreen()
+                3 -> ActivitiesScreen()
+            }
         }
     }
 }
 
 @Composable
-fun HomeScreen(tripViewModel: TripViewModel, modifier: Modifier = Modifier) {
-    val trips by tripViewModel.trips.collectAsState() // Collecting state
+fun TripItem(
+             trip: Trip,
+             onTripSelected: (Trip) -> Unit,
+             modifier: Modifier = Modifier
+){
+    var showDialog by remember { mutableStateOf(false) }
 
-    LazyColumn(modifier = modifier) {
-        item {
-            Text(
-                text = "Hello Traveler!",
-                style = MaterialTheme.typography.headlineLarge,
-                modifier = Modifier.padding(16.dp, 16.dp, 16.dp, 0.dp),
-                fontFamily = PaytoneOne,
-                color = SunsetOrange
-            )
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp)
+            .clickable { onTripSelected(trip) }, // Trigger onTripSelected when clicked
+        shape = MaterialTheme.shapes.medium,
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(text = trip.destination, style = MaterialTheme.typography.titleMedium)
+                Text(text = "Start Date: ${trip.startDate}", style = MaterialTheme.typography.bodyMedium)
+                Text(text = "End Date: ${trip.endDate}", style = MaterialTheme.typography.bodyMedium)
+                Text(text = "Duration: ${trip.duration}", style = MaterialTheme.typography.bodyMedium)
+            }
+            IconButton(onClick = { showDialog = true }) {
+                Icon(imageVector = Icons.Default.Info, contentDescription = "Info")
+            }
         }
-        item {
-            Text(
-                text = "Let's plan your next trip.",
-                style = MaterialTheme.typography.headlineLarge,
-                modifier = Modifier.padding(16.dp, 0.dp, 16.dp, 16.dp),
-                fontFamily = GlacialIndifference,
-                fontSize = 18.sp,
-            )
-        }
-        item { UpcomingTripsSection(trips = trips) }
-        item { QuickLinksSection() }
-        item { TravelStatsSection() }
-        item { WeatherSection() }
     }
-}
 
-
-@Composable
-fun FlightsScreen(tripViewModel: TripViewModel, modifier: Modifier = Modifier) {
-    val trips by tripViewModel.trips.collectAsState()
-    Column(modifier = modifier.fillMaxSize()) {
-        Text(
-            text = "Flights",
-            style = MaterialTheme.typography.titleLarge,
-            modifier = Modifier.padding(16.dp)
-        )
-
-        AddTripSection(tripViewModel) // Include the trip input section
-
-        // Check if trips are empty and show message or list
-        if (trips.isEmpty()) {
-            Text(text = "No upcoming trips", style = MaterialTheme.typography.bodyMedium)
-        } else {
-            LazyColumn {
-                items(trips) { trip ->
-                    TripItem(trip = trip) // Ensure 'trip' is of type 'Trip'
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = { showDialog = false },
+            title = { Text(text = "Trip Details") },
+            text = {
+                Column {
+                    Text(text = "Destination: ${trip.destination}")
+                    Text(text = "Start Date: ${trip.startDate}")
+                    Text(text = "End Date: ${trip.endDate}")
+                    Text(text = "Duration: ${trip.duration}")
+                    Text(text = "Country Code: ${trip.countryCode}")
+                }
+            },
+            confirmButton = {
+                Button(onClick = { showDialog = false }) {
+                    Text("Close")
                 }
             }
-        }
-    }
-}
-
-@Composable
-fun AddTripSection(tripViewModel: TripViewModel) {
-    var destination by remember { mutableStateOf("") }
-    var date by remember { mutableStateOf("") }
-
-    Column(modifier = Modifier.padding(16.dp)) {
-        TextField(
-            value = destination,
-            onValueChange = { destination = it },
-            label = { Text("Destination") }
         )
-        TextField(
-            value = date,
-            onValueChange = { date = it },
-            label = { Text("Date") }
-        )
-        Button(onClick = {
-            // Ensure this is called only when both fields are filled
-            if (destination.isNotBlank() && date.isNotBlank()) {
-                tripViewModel.addTrip(Trip(id = UUID.randomUUID().toString(), destination = destination, date = date))
-                destination = ""
-                date = ""
-            }
-        }) {
-            Text("Add Trip")
-        }
     }
 }
 
-
-@Composable
-fun TripItem(trip: Trip) {
-    Column(modifier = Modifier.padding(16.dp)) {
-        Text(text = "Destination: ${trip.destination}", style = MaterialTheme.typography.bodyLarge)
-        Text(text = "Date: ${trip.date}", style = MaterialTheme.typography.bodyMedium)
-    }
-}
-
-@Composable
-fun UpcomingTripsSection(trips: List<Trip>) {
-    Column(modifier = Modifier.padding(16.dp)) {
-        Text(text = "Your Upcoming Trips", style = MaterialTheme.typography.headlineSmall)
-
-        if (trips.isEmpty()) {
-            Text(
-                text = "No upcoming trips",
-                style = MaterialTheme.typography.bodyMedium
-            )
-        } else {
-            LazyColumn {
-                items(trips) { trip -> // Ensure 'trip' is of type 'Trip'
-                    TripItem(trip = trip)
-                }
-            }
-        }
-    }
-}
-
-
-@Composable
-fun QuickLinksSection() {
-    Text(text = "Quick Links")
-    // Add your quick links content here
-}
-
-@Composable
-fun TravelStatsSection() {
-    Text(text = "Your Travel Stats")
-    // Add your travel stats content here
-}
-
-@Composable
-fun WeatherSection() {
-    Text(text = "Weather")
-    // Add your weather content here
-}
 
 @Composable
 fun HotelsScreen(modifier: Modifier = Modifier) {
@@ -241,7 +179,7 @@ fun HotelsScreen(modifier: Modifier = Modifier) {
         Hotel("2", "Hotel 2", "Location 2"),
         Hotel("3", "Hotel 3", "Location 3")
     )
-    LazyColumn(modifier = modifier) {
+    LazyColumn(modifier = modifier.fillMaxWidth()) {
         items(hotels) { hotel ->
             Text(text = "${hotel.name} in ${hotel.location}")
         }
@@ -255,7 +193,7 @@ fun ActivitiesScreen(modifier: Modifier = Modifier) {
         Activity("2", "Activity 2", "Description 2"),
         Activity("3", "Activity 3", "Description 3")
     )
-    LazyColumn(modifier = modifier) {
+    LazyColumn(modifier = modifier.fillMaxWidth()) {
         items(activities) { activity ->
             Text(text = "${activity.name}: ${activity.description}")
         }
@@ -265,7 +203,44 @@ fun ActivitiesScreen(modifier: Modifier = Modifier) {
 @Preview(showBackground = true)
 @Composable
 fun DefaultPreview() {
+    val tripViewModel = TripViewModel()
     JetSetGoTheme {
-        MainScreen(TripViewModel())
+        MainScreen(tripViewModel)
     }
 }
+
+@Preview(showBackground = true)
+@Composable
+fun PreviewFlightsScreen() {
+    val tripViewModel = TripViewModel()
+    JetSetGoTheme {
+        FlightsScreen(tripViewModel)
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun TripItemPreview() {
+    val trip = Trip(
+        id = "1",
+        destination = "Destination",
+        startDate = "2022-01-01",
+        endDate = "2022-01-10",
+        countryCode = "PH",
+        transportationOptions = emptyList(),
+        budgetDetails = BudgetDetails(0.0, emptyList()),
+        packingChecklist = emptyList()
+    )
+    JetSetGoTheme {
+        TripItem(
+            trip = trip,
+            onTripSelected = {
+            }
+        )
+    }
+}
+
+
+
+
+
