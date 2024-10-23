@@ -47,5 +47,17 @@ class TripViewModel : ViewModel() {
             }
         }
     }
+
+
+    fun updateTrip(updatedTrip: Trip) {
+        _trips.value = _trips.value.map { trip ->
+            if (trip.id == updatedTrip.id) {
+                updatedTrip
+            } else {
+                trip
+            }
+        }
+    }
 }
+
 

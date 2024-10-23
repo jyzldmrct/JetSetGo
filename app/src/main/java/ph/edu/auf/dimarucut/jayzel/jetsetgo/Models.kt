@@ -35,7 +35,6 @@ data class Trip(
         }
 }
 
-
 data class BudgetItem(
     val name: String,
     val cost: Double

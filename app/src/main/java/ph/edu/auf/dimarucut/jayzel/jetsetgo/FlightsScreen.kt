@@ -161,17 +161,18 @@ fun FlightsScreen(tripViewModel: TripViewModel, modifier: Modifier = Modifier) {
                         .fillMaxWidth()
                         .padding(vertical = 8.dp)
                 ) {
+                    val boxModifier = Modifier
+                        .size(200.dp)
+                        .padding(8.dp)
+                        .clip(RoundedCornerShape(25.dp))
+                        .background(SunsetOrange)
+
                     item {
                         Box(
-                            modifier = Modifier
-                                .size(200.dp)
-                                .padding(8.dp)
-                                .clip(RoundedCornerShape(25.dp))
-                                .background(Yellow)
-                                .clickable(onClick = {
-                                    selectedTrip = trip
-                                    showTripDialog = true
-                                })
+                            modifier = boxModifier.clickable(onClick = {
+                                selectedTrip = trip
+                                showTripDialog = true
+                            })
                         ) {
                             Column(
                                 modifier = Modifier
@@ -181,11 +182,11 @@ fun FlightsScreen(tripViewModel: TripViewModel, modifier: Modifier = Modifier) {
                                 horizontalAlignment = Alignment.Start
                             ) {
                                 Text(
-                                    text = "${trip.destination},${trip.countryCode}",
+                                    text = "${trip.destination}, ${trip.countryCode}",
                                     modifier = Modifier.align(Alignment.Start),
                                     fontFamily = PaytoneOne,
                                     fontSize = 30.sp,
-                                    color = DenimBlue,
+                                    color = Color.White,
                                     lineHeight = 40.sp,
                                     textAlign = TextAlign.Center
                                 )
@@ -193,13 +194,7 @@ fun FlightsScreen(tripViewModel: TripViewModel, modifier: Modifier = Modifier) {
                         }
                     }
                     item {
-                        Box(
-                            modifier = Modifier
-                                .size(200.dp)
-                                .padding(8.dp)
-                                .clip(RoundedCornerShape(25.dp))
-                                .background(Yellow)
-                        ) {
+                        Box(modifier = boxModifier) {
                             Column(
                                 modifier = Modifier
                                     .fillMaxSize()
@@ -207,53 +202,40 @@ fun FlightsScreen(tripViewModel: TripViewModel, modifier: Modifier = Modifier) {
                                 verticalArrangement = Arrangement.Center,
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
-                                Text(text = "Transportation Options", modifier = Modifier.align(Alignment.CenterHorizontally))
+                                Text(
+                                    text = "Transportation Options",
+                                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                                )
                                 Spacer(modifier = Modifier.height(8.dp))
                                 trip.transportationOptions.forEach { option ->
-                                    Text(text = option.name, modifier = Modifier.align(Alignment.CenterHorizontally))
+                                    Text(
+                                        text = option.name,
+                                        modifier = Modifier.align(Alignment.CenterHorizontally)
+                                    )
                                 }
                             }
                         }
                     }
                     item {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(8.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(200.dp)
-                                    .clip(RoundedCornerShape(25.dp))
-                                    .background(Yellow)
-                            ) {
-                                BudgetCalculator(budgetDetails = trip.budgetDetails, countryCode = trip.countryCode)
-                            }
+                        Box(modifier = boxModifier) {
+                            BudgetCalculator(
+                                budgetDetails = trip.budgetDetails,
+                                countryCode = trip.countryCode
+                            )
                         }
                     }
                     item {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(8.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(200.dp)
-                                    .clip(RoundedCornerShape(25.dp))
-                                    .background(Yellow)
-                            ) {
-                                PackingChecklistScreen(
-                                    packingItems = trip.packingChecklist,
-                                    onAddItem = { newItem ->
-                                        val updatedChecklist = trip.packingChecklist + PackingItem(newItem)
-                                        tripViewModel.updatePackingChecklist(trip.id, updatedChecklist)
-                                        Toast.makeText(context, "Item added!", Toast.LENGTH_SHORT).show()
-                                    }
-                                )
-                            }
+                        Box(modifier = boxModifier) {
+                            PackingChecklistScreen(
+                                packingItems = trip.packingChecklist,
+                                onAddItem = { newItem ->
+                                    val updatedChecklist =
+                                        trip.packingChecklist + PackingItem(newItem)
+                                    tripViewModel.updatePackingChecklist(trip.id, updatedChecklist)
+                                    Toast.makeText(context, "Item added!", Toast.LENGTH_SHORT)
+                                        .show()
+                                }
+                            )
                         }
                     }
                 }
@@ -276,91 +258,91 @@ fun FlightsScreen(tripViewModel: TripViewModel, modifier: Modifier = Modifier) {
             transportationOptions = transportationOptions
         )
     }
-     if (showTripDialog && selectedTrip != null) {
+    if (showTripDialog && selectedTrip != null) {
 
-         AlertDialog(
-             onDismissRequest = { showDialog = false },
-             title = { Text("Trip Details",
-                 fontFamily = PaytoneOne,
-                 fontSize = 32.sp,
-                 textAlign = TextAlign.Center,
-                 color = DenimBlue) },
-             text = {
-                 Box(
-                     modifier = Modifier
-                         .width(320.dp)
-                         .wrapContentHeight()
-                 ) {
-                     Column {
-                         Text("Destination:",
-                             fontFamily = GlacialIndifference,
-                             fontSize = 20.sp,
-                             fontWeight = FontWeight.Bold,
-                             color = DenimBlue)
+        AlertDialog(
+            onDismissRequest = { showDialog = false },
+            title = { Text("Trip Details",
+                fontFamily = PaytoneOne,
+                fontSize = 32.sp,
+                textAlign = TextAlign.Center,
+                color = DenimBlue) },
+            text = {
+                Box(
+                    modifier = Modifier
+                        .width(320.dp)
+                        .wrapContentHeight()
+                ) {
+                    Column {
+                        Text("Destination:",
+                            fontFamily = GlacialIndifference,
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = DenimBlue)
 
-                         Text("${selectedTrip?.destination}",
-                             fontFamily = GlacialIndifference,
-                             fontSize = 24.sp,
-                             color = DenimBlue)
+                        Text("${selectedTrip?.destination}",
+                            fontFamily = GlacialIndifference,
+                            fontSize = 24.sp,
+                            color = DenimBlue)
 
-                         Text("Departure Date: ",
-                             fontFamily = GlacialIndifference,
-                             fontSize = 20.sp,
-                             fontWeight = FontWeight.Bold,
-                             color = DenimBlue)
+                        Text("Departure Date: ",
+                            fontFamily = GlacialIndifference,
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = DenimBlue)
 
-                         Text("${selectedTrip?.startDate}",
-                             fontFamily = GlacialIndifference,
-                             fontSize = 24.sp,
-                             color = DenimBlue)
+                        Text("${selectedTrip?.startDate}",
+                            fontFamily = GlacialIndifference,
+                            fontSize = 24.sp,
+                            color = DenimBlue)
 
-                         Text("Return Date:",
-                             fontFamily = GlacialIndifference,
-                             fontSize = 20.sp,
-                             fontWeight = FontWeight.Bold,
-                             color = DenimBlue)
+                        Text("Return Date:",
+                            fontFamily = GlacialIndifference,
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = DenimBlue)
 
-                         Text("${selectedTrip?.endDate}",
-                             fontFamily = GlacialIndifference,
-                             fontSize = 24.sp,
-                             color = DenimBlue)
+                        Text("${selectedTrip?.endDate}",
+                            fontFamily = GlacialIndifference,
+                            fontSize = 24.sp,
+                            color = DenimBlue)
 
-                         Text("Country Code:",
-                             fontFamily = GlacialIndifference,
-                             fontSize = 20.sp,
-                             fontWeight = FontWeight.Bold,
-                             color = DenimBlue)
+                        Text("Country Code:",
+                            fontFamily = GlacialIndifference,
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = DenimBlue)
 
-                         Text("${selectedTrip?.countryCode}",
-                             fontFamily = GlacialIndifference,
-                             fontSize = 24.sp,
-                             color = DenimBlue)
+                        Text("${selectedTrip?.countryCode}",
+                            fontFamily = GlacialIndifference,
+                            fontSize = 24.sp,
+                            color = DenimBlue)
 
-                         Text("Duration:",
-                             fontFamily = GlacialIndifference,
-                             fontSize = 20.sp,
-                             fontWeight = FontWeight.Bold,
-                             color = DenimBlue)
+                        Text("Duration:",
+                            fontFamily = GlacialIndifference,
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = DenimBlue)
 
-                         Text("${selectedTrip?.duration}",
-                             fontFamily = GlacialIndifference,
-                             fontSize = 24.sp,
-                             color = DenimBlue)
-                     }
-                 }
-             },
-             confirmButton = {
-                 Button(onClick = { showTripDialog = false },
-                     colors = ButtonDefaults.buttonColors( DarkRed)) {
-                     Text("CLOSE",
-                         fontFamily = PaytoneOne,
-                         fontSize = 16.sp,
-                         fontWeight = FontWeight.Bold,
-                         color = Color.White)
-                 }
-             }
-         )
-     }
+                        Text("${selectedTrip?.duration}",
+                            fontFamily = GlacialIndifference,
+                            fontSize = 24.sp,
+                            color = DenimBlue)
+                    }
+                }
+            },
+            confirmButton = {
+                Button(onClick = { showTripDialog = false },
+                    colors = ButtonDefaults.buttonColors( DarkRed)) {
+                    Text("CLOSE",
+                        fontFamily = PaytoneOne,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White)
+                }
+            }
+        )
+    }
 }
 
 @Composable
@@ -553,7 +535,7 @@ fun PackingChecklistScreen(packingItems: List<PackingItem>, onAddItem: (String) 
         modifier = Modifier
             .size(200.dp)
             .padding(8.dp)
-            .background(LightBlue)
+            .background(SunsetOrange)
             .clip(RoundedCornerShape(25.dp))
             .clickable { showDialog = true },
         contentAlignment = Alignment.Center
@@ -929,7 +911,7 @@ fun LazyRowPreview() {
                     .size(200.dp)
                     .padding(8.dp)
                     .clip(RoundedCornerShape(25.dp))
-                    .background(Yellow)
+                    .background(SunsetOrange)
             ) {
                 Column(
                     modifier = Modifier
@@ -943,7 +925,7 @@ fun LazyRowPreview() {
                         modifier = Modifier.align(Alignment.Start),
                         fontFamily = PaytoneOne,
                         fontSize = 30.sp,
-                        color = DenimBlue,
+                        color = Color.White,
                         lineHeight = 40.sp,
                         textAlign = TextAlign.Center
                     )
@@ -956,7 +938,7 @@ fun LazyRowPreview() {
                 .size(200.dp)
                 .padding(8.dp)
                 .clip(RoundedCornerShape(25.dp))
-                .background(LightBlue)
+                .background(SunsetOrange)
         ) {
             Column(
                 modifier = Modifier
@@ -981,7 +963,7 @@ fun LazyRowPreview() {
                 modifier = Modifier
                     .size(200.dp)
                     .clip(RoundedCornerShape(25.dp))
-                    .background(LightBlue)
+                    .background(SunsetOrange)
             ) {
                 BudgetCalculator(budgetDetails = BudgetDetails(0.0, emptyList()), countryCode = "PH")
             }
@@ -996,7 +978,7 @@ fun LazyRowPreview() {
                 modifier = Modifier
                     .size(200.dp)
                     .clip(RoundedCornerShape(25.dp))
-                    .background(LightBlue)
+                    .background(SunsetOrange)
             ) {
                 PackingChecklistScreen(
                     packingItems = emptyList(),
@@ -1004,8 +986,8 @@ fun LazyRowPreview() {
                 )
             }
         } }
-        }
     }
+}
 
 @Preview(showBackground = true)
 @Composable
