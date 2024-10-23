@@ -11,6 +11,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -262,85 +264,132 @@ fun FlightsScreen(tripViewModel: TripViewModel, modifier: Modifier = Modifier) {
 
         AlertDialog(
             onDismissRequest = { showDialog = false },
-            title = { Text("Trip Details",
-                fontFamily = PaytoneOne,
-                fontSize = 32.sp,
-                textAlign = TextAlign.Center,
-                color = DenimBlue) },
+            title = {
+                Box(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.End
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Edit,
+                                contentDescription = "Info Icon",
+                                modifier = Modifier
+                                    .padding(end = 8.dp)
+                                    .size(20.dp),
+                                tint = LightDenimBlue
+
+
+                            )
+                            Icon(
+                                imageVector = Icons.Default.Clear,
+                                contentDescription = "Close Icon",
+                                modifier = Modifier
+                                    .size(24.dp),
+                                tint = LightDenimBlue
+                            )
+                        }
+                        HorizontalDivider(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(8.dp),
+                            color = LightDenimBlue
+                        )
+                        Text(
+                            "Trip Details",
+                            fontFamily = PaytoneOne,
+                            fontSize = 28.sp,
+                            textAlign = TextAlign.Center,
+                            color = DenimBlue
+                        )
+
+
+                        HorizontalDivider(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(8.dp,8.dp,8.dp,0.dp),
+                            color = LightDenimBlue
+                        )
+                    }
+                }
+            },
             text = {
                 Box(
                     modifier = Modifier
-                        .width(320.dp)
+                        .fillMaxWidth()
                         .wrapContentHeight()
                 ) {
-                    Column {
+                Column {
                         Text("Destination:",
                             fontFamily = GlacialIndifference,
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = DenimBlue)
+                            fontSize = 16.sp,
+                            color = LightDenimBlue)
 
                         Text("${selectedTrip?.destination}",
                             fontFamily = GlacialIndifference,
                             fontSize = 24.sp,
-                            color = DenimBlue)
+                            fontWeight = FontWeight.Bold,
+                            color = DenimBlue
+                        )
 
                         Text("Departure Date: ",
                             fontFamily = GlacialIndifference,
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = DenimBlue)
+                            fontSize = 16.sp,
+                            color = LightDenimBlue
+                        )
 
                         Text("${selectedTrip?.startDate}",
                             fontFamily = GlacialIndifference,
                             fontSize = 24.sp,
-                            color = DenimBlue)
+                            fontWeight = FontWeight.Bold,
+                            color = DenimBlue
+                        )
 
                         Text("Return Date:",
                             fontFamily = GlacialIndifference,
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = DenimBlue)
+                            fontSize = 16.sp,
+                            color = LightDenimBlue
+                        )
 
                         Text("${selectedTrip?.endDate}",
                             fontFamily = GlacialIndifference,
                             fontSize = 24.sp,
-                            color = DenimBlue)
+                            fontWeight = FontWeight.Bold,
+                            color = DenimBlue
+                        )
 
                         Text("Country Code:",
                             fontFamily = GlacialIndifference,
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = DenimBlue)
+                            fontSize = 16.sp,
+                            color = LightDenimBlue
+                        )
 
                         Text("${selectedTrip?.countryCode}",
                             fontFamily = GlacialIndifference,
                             fontSize = 24.sp,
-                            color = DenimBlue)
+                            fontWeight = FontWeight.Bold,
+                            color = DenimBlue
+                        )
 
                         Text("Duration:",
                             fontFamily = GlacialIndifference,
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = DenimBlue)
+                            fontSize = 16.sp,
+                            color = LightDenimBlue
+                        )
 
                         Text("${selectedTrip?.duration}",
                             fontFamily = GlacialIndifference,
                             fontSize = 24.sp,
-                            color = DenimBlue)
+                            fontWeight = FontWeight.Bold,
+                            color = DenimBlue
+                        )
                     }
                 }
             },
-            confirmButton = {
-                Button(onClick = { showTripDialog = false },
-                    colors = ButtonDefaults.buttonColors( DarkRed)) {
-                    Text("CLOSE",
-                        fontFamily = PaytoneOne,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White)
-                }
-            }
+            confirmButton = {}
         )
     }
 }
@@ -994,20 +1043,72 @@ fun LazyRowPreview() {
 fun TripDetailsPreview() {
     AlertDialog(
         onDismissRequest = { },
-        title = { Text("Trip Details",
-            fontFamily = PaytoneOne,
-            fontSize = 32.sp,
-            textAlign = TextAlign.Center,
-            color = DenimBlue) },
+       title = {
+    Box(
+        modifier = Modifier.fillMaxWidth(),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Edit,
+                    contentDescription = "Info Icon",
+                    modifier = Modifier
+                        .padding(end = 8.dp)
+                        .size(20.dp),
+                    tint = LightDenimBlue
+
+                )
+                Icon(
+                    imageVector = Icons.Default.Clear,
+                    contentDescription = "Add Icon",
+                    modifier = Modifier
+                        .size(20.dp),
+                    tint = LightDenimBlue
+                )
+            }
+            HorizontalDivider(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp),
+                color = LightDenimBlue
+            )
+            Text(
+                "Trip Details",
+                fontFamily = PaytoneOne,
+                fontSize = 28.sp,
+                textAlign = TextAlign.Center,
+                color = DenimBlue
+            )
+
+            HorizontalDivider(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp,8.dp,8.dp,0.dp),
+                color = LightDenimBlue
+            )
+        }
+    }
+},
         text = {
             Box(
                 modifier = Modifier
-                    .width(500.dp) // Adjust the width as needed
-                    .height(200.dp) // Adjust the height as needed
+                    .width(500.dp)
+                    .height(200.dp)
             ) {
                 Column {
                     Text(
                         "Destination:",
+                        fontFamily = GlacialIndifference,
+                        fontSize = 16.sp,
+                        color = LightDenimBlue
+                    )
+
+                    Text(
+                        "Cubao",
                         fontFamily = GlacialIndifference,
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Bold,
@@ -1017,6 +1118,12 @@ fun TripDetailsPreview() {
                     Text(
                         "Departure Date: ",
                         fontFamily = GlacialIndifference,
+                        fontSize = 18.sp,
+                        color = LightDenimBlue
+                    )
+                    Text(
+                        "2024-05-05",
+                        fontFamily = GlacialIndifference,
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Bold,
                         color = DenimBlue
@@ -1025,21 +1132,38 @@ fun TripDetailsPreview() {
                     Text(
                         "Return Date:",
                         fontFamily = GlacialIndifference,
-                        fontSize = 24.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = DenimBlue
+                        fontSize = 18.sp,
+                        color = LightDenimBlue
                     )
-
                     Text(
-                        "Country Code:",
+                        "2024-05-09",
                         fontFamily = GlacialIndifference,
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Bold,
                         color = DenimBlue
                     )
-
+                    Text(
+                        "Country Code:",
+                        fontFamily = GlacialIndifference,
+                        fontSize = 18.sp,
+                        color = LightDenimBlue
+                    )
+                    Text(
+                        "PH",
+                        fontFamily = GlacialIndifference,
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = DenimBlue
+                    )
                     Text(
                         "Duration:",
+                        fontFamily = GlacialIndifference,
+                        fontSize = 18.sp,
+                        color = LightDenimBlue
+                    )
+
+                    Text(
+                        "5 days and 4 nights.",
                         fontFamily = GlacialIndifference,
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Bold,
