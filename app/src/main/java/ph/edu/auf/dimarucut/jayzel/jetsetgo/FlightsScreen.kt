@@ -11,6 +11,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Info
@@ -41,6 +43,7 @@ import androidx.compose.runtime.Composable
 
 @Composable
 fun FlightsScreen(tripViewModel: TripViewModel, modifier: Modifier = Modifier) {
+
     val trips by tripViewModel.trips.collectAsState()
     var showDialog by remember { mutableStateOf(false) }
     var showTripDialog by remember { mutableStateOf(false) }
@@ -53,7 +56,8 @@ fun FlightsScreen(tripViewModel: TripViewModel, modifier: Modifier = Modifier) {
     var transportationOptions: List<TransportationOption> by remember { mutableStateOf(emptyList()) }
     var selectedTransportationOption: TransportationOption? by remember { mutableStateOf(null) }
     var selectedTrip by remember { mutableStateOf<Trip?>(null) }
-
+    var showEditTripDialog by remember { mutableStateOf(false) }
+    val trip = selectedTrip
 
     val context = LocalContext.current
 
@@ -145,7 +149,7 @@ fun FlightsScreen(tripViewModel: TripViewModel, modifier: Modifier = Modifier) {
                     onDismiss = { showDialog = false },
                     onSubmit = { trip ->
                         tripViewModel.addTrip(trip)
-                        Toast.makeText(context, "Trip added!", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "Trip added!", Toast.LENGTH_SHORT).show() // Use context here
                     },
                     tripViewModel = tripViewModel
                 )
@@ -260,10 +264,9 @@ fun FlightsScreen(tripViewModel: TripViewModel, modifier: Modifier = Modifier) {
             transportationOptions = transportationOptions
         )
     }
-    if (showTripDialog && selectedTrip != null) {
-
+    if (showTripDialog && trip != null) {
         AlertDialog(
-            onDismissRequest = { showDialog = false },
+            onDismissRequest = { showTripDialog = false },
             title = {
                 Box(
                     modifier = Modifier.fillMaxWidth(),
@@ -279,16 +282,20 @@ fun FlightsScreen(tripViewModel: TripViewModel, modifier: Modifier = Modifier) {
                                 contentDescription = "Info Icon",
                                 modifier = Modifier
                                     .padding(end = 8.dp)
-                                    .size(20.dp),
+                                    .size(20.dp)
+                                    .clickable {
+                                        showEditTripDialog = true
+                                    },
                                 tint = LightDenimBlue
-
-
                             )
                             Icon(
                                 imageVector = Icons.Default.Clear,
                                 contentDescription = "Close Icon",
                                 modifier = Modifier
-                                    .size(24.dp),
+                                    .size(24.dp)
+                                    .clickable {
+                                        showTripDialog = false
+                                    },
                                 tint = LightDenimBlue
                             )
                         }
@@ -305,12 +312,10 @@ fun FlightsScreen(tripViewModel: TripViewModel, modifier: Modifier = Modifier) {
                             textAlign = TextAlign.Center,
                             color = DenimBlue
                         )
-
-
                         HorizontalDivider(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(8.dp,8.dp,8.dp,0.dp),
+                                .padding(8.dp, 8.dp, 8.dp, 0.dp),
                             color = LightDenimBlue
                         )
                     }
@@ -322,65 +327,67 @@ fun FlightsScreen(tripViewModel: TripViewModel, modifier: Modifier = Modifier) {
                         .fillMaxWidth()
                         .wrapContentHeight()
                 ) {
-                Column {
-                        Text("Destination:",
+                    Column {
+                        Text(
+                            "Destination:",
                             fontFamily = GlacialIndifference,
                             fontSize = 16.sp,
-                            color = LightDenimBlue)
-
-                        Text("${selectedTrip?.destination}",
+                            color = LightDenimBlue
+                        )
+                        Text(
+                            "${trip.destination}",
                             fontFamily = GlacialIndifference,
                             fontSize = 24.sp,
                             fontWeight = FontWeight.Bold,
                             color = DenimBlue
                         )
-
-                        Text("Departure Date: ",
+                        Text(
+                            "Departure Date: ",
                             fontFamily = GlacialIndifference,
                             fontSize = 16.sp,
                             color = LightDenimBlue
                         )
-
-                        Text("${selectedTrip?.startDate}",
+                        Text(
+                            "${trip.startDate}",
                             fontFamily = GlacialIndifference,
                             fontSize = 24.sp,
                             fontWeight = FontWeight.Bold,
                             color = DenimBlue
                         )
-
-                        Text("Return Date:",
+                        Text(
+                            "Return Date:",
                             fontFamily = GlacialIndifference,
                             fontSize = 16.sp,
                             color = LightDenimBlue
                         )
-
-                        Text("${selectedTrip?.endDate}",
+                        Text(
+                            "${trip.endDate}",
                             fontFamily = GlacialIndifference,
                             fontSize = 24.sp,
                             fontWeight = FontWeight.Bold,
                             color = DenimBlue
                         )
-
-                        Text("Country Code:",
+                        Text(
+                            "Country Code:",
                             fontFamily = GlacialIndifference,
                             fontSize = 16.sp,
                             color = LightDenimBlue
                         )
-
-                        Text("${selectedTrip?.countryCode}",
+                        Text(
+                            "${trip.countryCode}",
                             fontFamily = GlacialIndifference,
                             fontSize = 24.sp,
                             fontWeight = FontWeight.Bold,
                             color = DenimBlue
                         )
-
-                        Text("Duration:",
+                        Text(
+                            "Duration:",
                             fontFamily = GlacialIndifference,
                             fontSize = 16.sp,
                             color = LightDenimBlue
                         )
-
-                        Text("${selectedTrip?.duration}",
+                        Text(
+                            "${trip.duration}",
                             fontFamily = GlacialIndifference,
                             fontSize = 24.sp,
                             fontWeight = FontWeight.Bold,
@@ -391,7 +398,180 @@ fun FlightsScreen(tripViewModel: TripViewModel, modifier: Modifier = Modifier) {
             },
             confirmButton = {}
         )
+
+        if (showEditTripDialog) {
+            EditTripDialog(
+                trip = trip,
+                onDismiss = { showEditTripDialog = false },
+                onSubmit = { updatedTrip ->
+                    tripViewModel.updateTrip(updatedTrip)
+                    selectedTrip = updatedTrip
+                    showEditTripDialog = false
+                }
+            )
+        }
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun EditTripDialog(trip: Trip, onDismiss: () -> Unit, onSubmit: (Trip) -> Unit) {
+    var destination by remember { mutableStateOf(trip.destination) }
+    var startDate by remember { mutableStateOf(trip.startDate) }
+    var endDate by remember { mutableStateOf(trip.endDate) }
+    var countryCode by remember { mutableStateOf(trip.countryCode) }
+
+    val context = LocalContext.current
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Box(
+                modifier = Modifier.fillMaxWidth(),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.End
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Clear,
+                            contentDescription = "Close Icon",
+                            modifier = Modifier
+                                .padding(end = 8.dp)
+                                .size(24.dp)
+                                .clickable {
+                                    onDismiss()
+                                },
+                            tint = LightDenimBlue
+                        )
+                        Icon(
+                            imageVector = Icons.Default.Check,
+                            contentDescription = "Save Icon",
+                            modifier = Modifier
+                                .size(24.dp)
+                                .clickable {
+                                    val updatedTrip = trip.copy(
+                                        destination = destination,
+                                        startDate = startDate,
+                                        endDate = endDate,
+                                        countryCode = countryCode
+                                    )
+                                    onSubmit(updatedTrip)
+                                    Toast.makeText(context, "Trip updated!", Toast.LENGTH_SHORT).show()
+                                },
+                            tint = DenimBlue
+                        )
+                    }
+                    HorizontalDivider(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp),
+                        color = LightDenimBlue
+                    )
+                    Text(
+                        "Trip Details",
+                        fontFamily = PaytoneOne,
+                        fontSize = 28.sp,
+                        textAlign = TextAlign.Center,
+                        color = DenimBlue
+                    )
+                    HorizontalDivider(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp, 8.dp, 8.dp, 0.dp),
+                        color = LightDenimBlue
+                    )
+                }
+            }
+        },
+        text = {
+            Box(
+                modifier = Modifier
+                    .width(500.dp)
+                    .wrapContentHeight()
+            ) {
+                Column (
+                    modifier = Modifier.background(Color.Transparent) 
+                ) {
+                    TextField(
+                        value = destination,
+                        onValueChange = { destination = it },
+                        label = { Text("Destination") },
+                        textStyle = TextStyle(
+                            fontFamily = GlacialIndifference,
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = DenimBlue // Text color applied directly here
+                        ),
+                        colors = TextFieldDefaults.textFieldColors(
+                            focusedIndicatorColor = DenimBlue,
+                            unfocusedIndicatorColor = LightDenimBlue,
+                            focusedLabelColor = LightDenimBlue,
+                            unfocusedLabelColor = LightDenimBlue,
+                            cursorColor = DenimBlue
+                        )
+                    )
+                    TextField(
+                        value = startDate,
+                        onValueChange = { startDate = it },
+                        label = { Text("Departure Date") },
+                        textStyle = TextStyle(
+                            fontFamily = GlacialIndifference,
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = DenimBlue
+                        ),
+                        colors = TextFieldDefaults.textFieldColors(
+                            focusedIndicatorColor = DenimBlue,
+                            unfocusedIndicatorColor = LightDenimBlue,
+                            focusedLabelColor = LightDenimBlue,
+                            unfocusedLabelColor = LightDenimBlue,
+                            cursorColor = DenimBlue
+                        )
+                    )
+                    TextField(
+                        value = endDate,
+                        onValueChange = { endDate = it },
+                        label = { Text("Return Date") },
+                        textStyle = TextStyle(
+                            fontFamily = GlacialIndifference,
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = DenimBlue
+                        ),
+                        colors = TextFieldDefaults.textFieldColors(
+                            focusedIndicatorColor = DenimBlue,
+                            unfocusedIndicatorColor = LightDenimBlue,
+                            focusedLabelColor = LightDenimBlue,
+                            unfocusedLabelColor = LightDenimBlue,
+                            cursorColor = DenimBlue
+                        )
+                    )
+                    TextField(
+                        value = countryCode,
+                        onValueChange = { countryCode = it },
+                        label = { Text("Country Code") },
+                        textStyle = TextStyle(
+                            fontFamily = GlacialIndifference,
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = DenimBlue
+                        ),
+                        colors = TextFieldDefaults.textFieldColors(
+                            focusedIndicatorColor = DenimBlue,
+                            unfocusedIndicatorColor = LightDenimBlue,
+                            focusedLabelColor = LightDenimBlue,
+                            unfocusedLabelColor = LightDenimBlue,
+                            cursorColor = DenimBlue
+                        )
+                    )
+                }
+            }
+        },
+        confirmButton = { }
+    )
 }
 
 @Composable
@@ -1087,7 +1267,7 @@ fun TripDetailsPreview() {
             HorizontalDivider(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(8.dp,8.dp,8.dp,0.dp),
+                    .padding(8.dp, 8.dp, 8.dp, 0.dp),
                 color = LightDenimBlue
             )
         }
@@ -1194,5 +1374,25 @@ fun AddTripDialogPreview() {
         onDismiss = { },
         onSubmit = { },
         tripViewModel = tripViewModel
+    )
+}
+
+@Preview(showBackground = true)
+@Composable
+fun EditTripDialogPreview() {
+    val trip = Trip(
+        id = "1",
+        destination = "Destination",
+        startDate = "2022-01-01",
+        endDate = "2022-01-10",
+        countryCode = "PH",
+        transportationOptions = emptyList(),
+        budgetDetails = BudgetDetails(0.0, emptyList()),
+        packingChecklist = emptyList()
+    )
+    EditTripDialog(
+        trip = trip,
+        onDismiss = { },
+        onSubmit = { }
     )
 }
