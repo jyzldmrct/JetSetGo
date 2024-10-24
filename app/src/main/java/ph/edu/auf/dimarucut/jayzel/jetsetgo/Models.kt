@@ -24,16 +24,26 @@ data class Trip(
         get() {
             val start = LocalDate.parse(startDate)
             val end = LocalDate.parse(endDate)
-            val days = ChronoUnit.DAYS.between(start, end) // Don't add 1 here
+            val days = ChronoUnit.DAYS.between(start, end) + 1
+            val nights = days - 1
 
             return when {
-                days == 0L -> "1 day" // Same start and end date means it's a 1-day trip
-                days == 1L -> "2 days and 1 night" // Start and end on consecutive days
-                days == 2L -> "3 days and 2 nights"
-                else -> "${days + 1} days and $days nights" // +1 for inclusive counting of days
+                days == 0L -> "Same day trip"
+                days == 1L -> "1 day"
+                days == 2L -> "2 days and 1 night"
+                else -> "$days days and $nights nights"
             }
         }
 }
+
+data class TransportationOption(
+    val name: String
+)
+
+data class TransportationCategory(
+    val name: String,
+    val options: List<TransportationOption>
+)
 
 data class BudgetItem(
     val name: String,
@@ -50,6 +60,5 @@ data class PackingItem(
     val isChecked: Boolean = false
 )
 
-data class TransportationOption(val name: String, val description: String)
 
 

@@ -11,9 +11,11 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.AddCircle
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.DirectionsCar
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.*
@@ -39,6 +41,12 @@ import java.util.Locale
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.ExperimentalFoundationApi
 
 
 @Composable
@@ -48,16 +56,74 @@ fun FlightsScreen(tripViewModel: TripViewModel, modifier: Modifier = Modifier) {
     var showDialog by remember { mutableStateOf(false) }
     var showTripDialog by remember { mutableStateOf(false) }
     var showTransportationDialog by remember { mutableStateOf(false) }
-    val selectedTripId by remember { mutableStateOf<String?>(null) }
+    var selectedTripId by remember { mutableStateOf<String?>(null) }
     var showBudgetDialog by remember { mutableStateOf(false) }
     var showPackingDialog by remember { mutableStateOf(false) }
     var budgetDetails: BudgetDetails? by remember { mutableStateOf(null) }
     var packingChecklist: List<PackingItem> by remember { mutableStateOf(emptyList()) }
     var transportationOptions: List<TransportationOption> by remember { mutableStateOf(emptyList()) }
-    var selectedTransportationOption: TransportationOption? by remember { mutableStateOf(null) }
     var selectedTrip by remember { mutableStateOf<Trip?>(null) }
     var showEditTripDialog by remember { mutableStateOf(false) }
     val trip = selectedTrip
+    var showChosenTransportationDialog by remember { mutableStateOf(false) }
+    var selectedTransportationOptions: List<TransportationOption> by remember { mutableStateOf(emptyList()) }
+
+    val TransportationCategories = listOf(
+        TransportationCategory(
+            name = "Air Travel",
+            options = listOf(
+                TransportationOption("Commercial flights"),
+                TransportationOption("Charter flights"),
+                TransportationOption("Private jets"),
+                TransportationOption("Domestic flights"),  // Specific to the Philippines
+                TransportationOption("Low-cost carriers")  // Popular in the Philippines
+            )
+        ),
+        TransportationCategory(
+            name = "Ground Transportation",
+            options = listOf(
+                TransportationOption("Car rentals"),
+                TransportationOption("Taxis"),
+                TransportationOption("Buses"),
+                TransportationOption("Trains"),
+                TransportationOption("Motorbikes"),
+                TransportationOption("Jeepneys"),  // Iconic mode of transport in the Philippines
+                TransportationOption("Tricycles"),  // Common in rural areas
+                TransportationOption("Vans for hire")  // Common for group travel
+            )
+        ),
+        TransportationCategory(
+            name = "Water Travel",
+            options = listOf(
+                TransportationOption("Ferries"),
+                TransportationOption("Cruises"),
+                TransportationOption("Yachts"),
+                TransportationOption("Speedboats")
+            )
+        ),
+        TransportationCategory(
+            name = "Public Transport",
+            options = listOf(
+                TransportationOption("City buses"),
+                TransportationOption("Subways"),
+                TransportationOption("Trams"),
+                TransportationOption("UV Express"),  // Popular shared van service in the Philippines
+                TransportationOption("P2P Buses")  // Point-to-point bus services
+            )
+        ),
+        TransportationCategory(
+            name = "Specialty",
+            options = listOf(
+                TransportationOption("Cable cars"),
+                TransportationOption("Tuk-tuks"),
+                TransportationOption("Horse-drawn carriages"),
+                TransportationOption("Sidecars"),  // Often used with motorcycles
+                TransportationOption("Scooters")  // Increasingly popular for personal transport
+            )
+        )
+    )
+
+
 
     val context = LocalContext.current
 
@@ -136,8 +202,7 @@ fun FlightsScreen(tripViewModel: TripViewModel, modifier: Modifier = Modifier) {
                         contentDescription = "Add icon",
                         modifier = Modifier
                             .size(16.dp)
-                            .align(Alignment.TopEnd)
-                            .offset(y = (-4).dp),
+                            .align(Alignment.TopEnd),
                         tint = Color.White
                     )
                 }
@@ -149,7 +214,7 @@ fun FlightsScreen(tripViewModel: TripViewModel, modifier: Modifier = Modifier) {
                     onDismiss = { showDialog = false },
                     onSubmit = { trip ->
                         tripViewModel.addTrip(trip)
-                        Toast.makeText(context, "Trip added!", Toast.LENGTH_SHORT).show() // Use context here
+                        Toast.makeText(context, "Trip added!", Toast.LENGTH_SHORT).show()
                     },
                     tripViewModel = tripViewModel
                 )
@@ -158,7 +223,7 @@ fun FlightsScreen(tripViewModel: TripViewModel, modifier: Modifier = Modifier) {
 
         if (trips.isEmpty()) {
             item {
-                Text(text = "No upcoming trips", style = MaterialTheme.typography.bodyMedium)
+                Text(text = "No upcoming trips.", style = MaterialTheme.typography.bodyMedium)
             }
         } else {
             items(trips) { trip ->
@@ -172,24 +237,33 @@ fun FlightsScreen(tripViewModel: TripViewModel, modifier: Modifier = Modifier) {
                         .padding(8.dp)
                         .clip(RoundedCornerShape(25.dp))
                         .background(SunsetOrange)
-
                     item {
                         Box(
-                            modifier = boxModifier.clickable(onClick = {
-                                selectedTrip = trip
-                                showTripDialog = true
-                            })
+                            modifier = boxModifier
                         ) {
-                            Column(
+                            IconButton(
+                                onClick = {
+                                    selectedTrip = trip
+                                    showTripDialog = true
+                                },
+                                modifier = Modifier
+                                    .align(Alignment.TopEnd)
+                                    .padding(8.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Info,
+                                    contentDescription = "Info Icon",
+                                    tint = Color.White
+                                )
+                            }
+                            Box(
                                 modifier = Modifier
                                     .fillMaxSize()
                                     .padding(8.dp),
-                                verticalArrangement = Arrangement.Center,
-                                horizontalAlignment = Alignment.Start
+                                contentAlignment = Alignment.Center
                             ) {
                                 Text(
                                     text = "${trip.destination}, ${trip.countryCode}",
-                                    modifier = Modifier.align(Alignment.Start),
                                     fontFamily = PaytoneOne,
                                     fontSize = 30.sp,
                                     color = Color.White,
@@ -200,7 +274,19 @@ fun FlightsScreen(tripViewModel: TripViewModel, modifier: Modifier = Modifier) {
                         }
                     }
                     item {
-                        Box(modifier = boxModifier) {
+                        Box(
+                            modifier = Modifier
+                                .size(200.dp)
+                                .padding(8.dp)
+                                .clip(RoundedCornerShape(25.dp))
+                                .background(
+                                    brush = Brush.linearGradient(
+                                        colors = listOf(SunsetOrange,LightSunsetOrange),
+                                        start = Offset(0f, 0f), // Start at the top-left corner
+                                        end = Offset.Infinite // End at the bottom-right corner
+                                    )
+                                )
+                        ){
                             Column(
                                 modifier = Modifier
                                     .fillMaxSize()
@@ -208,20 +294,64 @@ fun FlightsScreen(tripViewModel: TripViewModel, modifier: Modifier = Modifier) {
                                 verticalArrangement = Arrangement.Center,
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
+                                Box(
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.End,
+                                        modifier = Modifier.fillMaxWidth()
+                                    ) {
+
+                                        Icon(
+                                            imageVector = Icons.Default.AddCircle,
+                                            contentDescription = "Add Icon",
+                                            tint = Color.White,
+                                            modifier = Modifier
+                                                .size(24.dp)
+                                                .clickable {
+                                                    showTransportationDialog = true
+                                                }
+                                        )
+                                        Spacer(modifier = Modifier.width(4.dp))
+                                        Icon(
+                                            imageVector = Icons.Default.Info,
+                                            contentDescription = "Info Icon",
+                                            tint = Color.White,
+                                            modifier = Modifier
+                                                .size(24.dp)
+                                                .clickable {
+                                                    showChosenTransportationDialog = true
+                                                }
+                                        )
+                                    }
+                                }
+                                Divider(color = Color.White,
+                                    thickness = 2.dp,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(8.dp)
+                                )
+
                                 Text(
-                                    text = "Transportation Options",
-                                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                                    text = "Transportation",
+                                    modifier = Modifier.align(Alignment.CenterHorizontally),
+                                    style = TextStyle(
+                                        fontFamily = PaytoneOne,
+                                        fontSize = 21.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color.White
+                                    )
                                 )
                                 Spacer(modifier = Modifier.height(8.dp))
-                                trip.transportationOptions.forEach { option ->
-                                    Text(
-                                        text = option.name,
-                                        modifier = Modifier.align(Alignment.CenterHorizontally)
-                                    )
-                                }
+                                Icon(
+                                    imageVector = Icons.Default.DirectionsCar,
+                                    contentDescription = "Transportation Icon",
+                                    tint = Color.White,
+                                    modifier = Modifier.size(80.dp)
+                                )
                             }
-                        }
-                    }
+                        } }
                     item {
                         Box(modifier = boxModifier) {
                             BudgetCalculator(
@@ -249,21 +379,19 @@ fun FlightsScreen(tripViewModel: TripViewModel, modifier: Modifier = Modifier) {
         }
     }
 
-    if (showTransportationDialog && selectedTripId != null) {
-        AddTransportationDialog(
+    if (showTransportationDialog) {
+        TransportationDialog(
             showDialog = showTransportationDialog,
             onDismiss = { showTransportationDialog = false },
             onSubmit = { transportationOption ->
-                selectedTripId?.let { tripId ->
-                    tripViewModel.addTransportationOption(tripId, transportationOption)
-                    selectedTransportationOption = transportationOption
-                    Toast.makeText(context, "Transportation option added!", Toast.LENGTH_SHORT).show()
-                }
+                selectedTransportationOptions = selectedTransportationOptions + transportationOption // Add selected option to the list
                 showTransportationDialog = false
+                Toast.makeText(context, "Transportation option added: ${transportationOption.name}", Toast.LENGTH_SHORT).show()
             },
-            transportationOptions = transportationOptions
+            transportationCategories = TransportationCategories
         )
     }
+
     if (showTripDialog && trip != null) {
         AlertDialog(
             onDismissRequest = { showTripDialog = false },
@@ -387,7 +515,7 @@ fun FlightsScreen(tripViewModel: TripViewModel, modifier: Modifier = Modifier) {
                             color = LightDenimBlue
                         )
                         Text(
-                            "${trip.duration}",
+                            trip.duration,
                             fontFamily = GlacialIndifference,
                             fontSize = 24.sp,
                             fontWeight = FontWeight.Bold,
@@ -410,6 +538,135 @@ fun FlightsScreen(tripViewModel: TripViewModel, modifier: Modifier = Modifier) {
                 }
             )
         }
+    }
+
+if (showChosenTransportationDialog) {
+    ChosenTransportationDialog(
+        showDialog = showChosenTransportationDialog,
+        onDismiss = { showChosenTransportationDialog = false },
+        selectedTransportationOptions = selectedTransportationOptions,
+        onDelete = { transportationOption ->
+            selectedTransportationOptions = selectedTransportationOptions - transportationOption // Remove the selected option from the list
+            Toast.makeText(context, "Transportation option removed: ${transportationOption.name}", Toast.LENGTH_SHORT).show()
+        }
+    )
+}
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun ChosenTransportationDialog(
+    showDialog: Boolean,
+    onDismiss: () -> Unit,
+    selectedTransportationOptions: List<TransportationOption>,
+    onDelete: (TransportationOption) -> Unit
+) {
+    if (!showDialog) return
+
+    var showConfirmationDialog by remember { mutableStateOf(false) }
+    var transportationOptionToDelete by remember { mutableStateOf<TransportationOption?>(null) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Column {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Clear,
+                        contentDescription = "Close Icon",
+                        tint = DenimBlue,
+                        modifier = Modifier
+                            .padding(8.dp)
+                            .clickable { onDismiss() } // Close the dialog when clicked
+                    )
+                }
+                Divider(color = SkyBlue, thickness = 1.dp)
+                Text(
+                    "Selected Vehicle Options",
+                    fontFamily = PaytoneOne,
+                    fontSize = 28.sp,
+                    color = SkyBlue,
+                    textAlign = TextAlign.Center
+                )
+                Divider(color = SkyBlue, thickness = 1.dp)
+            }
+        },
+        text = {
+            Column {
+                if (selectedTransportationOptions.isNotEmpty()) {
+                    selectedTransportationOptions.forEachIndexed { index, option ->
+                        Text(
+                            text = "${index + 1}. ${option.name}",
+                            fontFamily = GlacialIndifference,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp,
+                            modifier = Modifier
+                                .combinedClickable(
+                                    onClick = {},
+                                    onLongClick = {
+                                        transportationOptionToDelete = option
+                                        showConfirmationDialog = true
+                                    }
+                                )
+                                .padding(8.dp)
+                        )
+                    }
+                } else {
+                    Text("No transportation options selected.")
+                }
+            }
+        },
+        confirmButton = {}
+    )
+
+    if (showConfirmationDialog) {
+        AlertDialog(
+            onDismissRequest = { showConfirmationDialog = false },
+            title = { Text("Confirm Deletion",
+                fontFamily = PaytoneOne,
+                color = DenimBlue,
+                fontSize = 28.sp,
+            ) },
+            text = { Text("Are you sure you want to delete this transportation option?",
+                fontFamily = GlacialIndifference,
+                fontWeight = FontWeight.Bold,
+                fontSize = 16.sp
+            ) },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        transportationOptionToDelete?.let { onDelete(it) }
+                        showConfirmationDialog = false
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = DenimBlue)
+                ) {
+                    Text(
+                        "Delete",
+                        fontFamily = PaytoneOne,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
+                }
+            },
+            dismissButton = {
+                Button(
+                    onClick = { showConfirmationDialog = false },
+                    colors = ButtonDefaults.buttonColors(containerColor = LightDenimBlue)
+                ) {
+                    Text(
+                        "Cancel",
+                        fontFamily = PaytoneOne,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = DirtyWhite
+                    )
+                }
+            }
+        )
     }
 }
 
@@ -461,27 +718,27 @@ fun EditTripDialog(trip: Trip, onDismiss: () -> Unit, onSubmit: (Trip) -> Unit) 
                                     onSubmit(updatedTrip)
                                     Toast.makeText(context, "Trip updated!", Toast.LENGTH_SHORT).show()
                                 },
-                            tint = DenimBlue
+                            tint = SkyBlue
                         )
                     }
                     HorizontalDivider(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(8.dp),
-                        color = LightDenimBlue
+                        color = SkyBlue
                     )
                     Text(
-                        "Trip Details",
+                        "Edit Trip Details",
                         fontFamily = PaytoneOne,
                         fontSize = 28.sp,
                         textAlign = TextAlign.Center,
-                        color = DenimBlue
+                        color = SkyBlue
                     )
                     HorizontalDivider(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(8.dp, 8.dp, 8.dp, 0.dp),
-                        color = LightDenimBlue
+                        color = SkyBlue
                     )
                 }
             }
@@ -493,7 +750,7 @@ fun EditTripDialog(trip: Trip, onDismiss: () -> Unit, onSubmit: (Trip) -> Unit) 
                     .wrapContentHeight()
             ) {
                 Column (
-                    modifier = Modifier.background(Color.Transparent) 
+                    modifier = Modifier.background(Color.Transparent)
                 ) {
                     TextField(
                         value = destination,
@@ -506,9 +763,10 @@ fun EditTripDialog(trip: Trip, onDismiss: () -> Unit, onSubmit: (Trip) -> Unit) 
                             color = DenimBlue // Text color applied directly here
                         ),
                         colors = TextFieldDefaults.textFieldColors(
-                            focusedIndicatorColor = DenimBlue,
+                            containerColor = Color.Transparent,
+                            focusedIndicatorColor = SkyBlue,
                             unfocusedIndicatorColor = LightDenimBlue,
-                            focusedLabelColor = LightDenimBlue,
+                            focusedLabelColor = SkyBlue,
                             unfocusedLabelColor = LightDenimBlue,
                             cursorColor = DenimBlue
                         )
@@ -524,9 +782,10 @@ fun EditTripDialog(trip: Trip, onDismiss: () -> Unit, onSubmit: (Trip) -> Unit) 
                             color = DenimBlue
                         ),
                         colors = TextFieldDefaults.textFieldColors(
-                            focusedIndicatorColor = DenimBlue,
+                            containerColor = Color.Transparent,
+                            focusedIndicatorColor = SkyBlue,
                             unfocusedIndicatorColor = LightDenimBlue,
-                            focusedLabelColor = LightDenimBlue,
+                            focusedLabelColor = SkyBlue,
                             unfocusedLabelColor = LightDenimBlue,
                             cursorColor = DenimBlue
                         )
@@ -542,9 +801,10 @@ fun EditTripDialog(trip: Trip, onDismiss: () -> Unit, onSubmit: (Trip) -> Unit) 
                             color = DenimBlue
                         ),
                         colors = TextFieldDefaults.textFieldColors(
-                            focusedIndicatorColor = DenimBlue,
+                            containerColor = Color.Transparent,
+                            focusedIndicatorColor = SkyBlue,
                             unfocusedIndicatorColor = LightDenimBlue,
-                            focusedLabelColor = LightDenimBlue,
+                            focusedLabelColor = SkyBlue,
                             unfocusedLabelColor = LightDenimBlue,
                             cursorColor = DenimBlue
                         )
@@ -560,9 +820,10 @@ fun EditTripDialog(trip: Trip, onDismiss: () -> Unit, onSubmit: (Trip) -> Unit) 
                             color = DenimBlue
                         ),
                         colors = TextFieldDefaults.textFieldColors(
-                            focusedIndicatorColor = DenimBlue,
+                            containerColor = Color.Transparent,
+                            focusedIndicatorColor = SkyBlue,
                             unfocusedIndicatorColor = LightDenimBlue,
-                            focusedLabelColor = LightDenimBlue,
+                            focusedLabelColor = SkyBlue,
                             unfocusedLabelColor = LightDenimBlue,
                             cursorColor = DenimBlue
                         )
@@ -831,36 +1092,103 @@ fun BudgetPlannerDialog(budgetDetails: BudgetDetails?, onDismiss: () -> Unit) {
 }
 
 @Composable
-fun AddTransportationDialog(
+fun TransportationDialog(
     showDialog: Boolean,
     onDismiss: () -> Unit,
     onSubmit: (TransportationOption) -> Unit,
-    transportationOptions: List<TransportationOption>
+    transportationCategories: List<TransportationCategory>
 ) {
     if (!showDialog) return
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Select Transportation Option") },
+        title = {
+            Column {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Clear,
+                        tint = DenimBlue,
+                        contentDescription = "Close Icon",
+                        modifier = Modifier
+                            .padding(8.dp)
+                            .clickable { onDismiss() }
+                    )
+                }
+                Divider(color = SunsetOrange, thickness = 1.dp)
+                Text(
+                    "Transportation Options",
+                    fontFamily = PaytoneOne,
+                    fontSize = 28.sp,
+                    color = SunsetOrange,
+                    textAlign = TextAlign.Center
+                )
+                Divider(color = SunsetOrange, thickness = 1.dp)
+            }
+        },
         text = {
             Column {
-                LazyColumn {
-                    items(transportationOptions) { option ->
-                        Text(
-                            text = option.name,
-                            modifier = Modifier
-                                .clickable {
-                                    onSubmit(option)
+                if (transportationCategories.isNotEmpty()) {
+                    var expandedCategoryIndex by remember { mutableStateOf(-1) } // Track the currently expanded category
+
+                    transportationCategories.forEachIndexed { index, category ->
+                        val isExpanded = expandedCategoryIndex == index // Check if this category is expanded
+                        Column {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        // Toggle the current category
+                                        expandedCategoryIndex = if (isExpanded) -1 else index
+                                    }
+                                    .padding(8.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = category.name,
+                                    fontFamily = PaytoneOne,
+                                    fontSize = 18.sp,
+                                    color = DenimBlue,
+                                    modifier = Modifier.weight(1f)
+                                )
+                                Icon(
+                                    imageVector = Icons.Default.ArrowDropDown,
+                                    contentDescription = "Dropdown Icon",
+                                    tint = SunsetOrange
+                                )
+                            }
+                            // Show the options directly below the category when expanded
+                            if (isExpanded) {
+                                Column {
+                                    category.options.forEach { option ->
+                                        Text(
+                                            text = option.name,
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .clickable {
+                                                    onSubmit(option)
+                                                    expandedCategoryIndex = -1
+                                                }
+                                                .padding(8.dp),
+                                            color = DenimBlue,
+                                            fontSize = 16.sp,
+                                            fontFamily = GlacialIndifference,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                    }
                                 }
-                                .padding(8.dp)
-                        )
+                            }
+
+                        }
                     }
+                } else {
+                    Text("No transportation options available.", modifier = Modifier.padding(16.dp))
                 }
             }
         },
-        confirmButton = {
-            Button(onClick = onDismiss) {
-                Text("Close")
+        confirmButton = { {
             }
         }
     )
@@ -925,6 +1253,7 @@ fun TripItemWithNoSelection(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddTripDialog(
     showDialog: Boolean,
@@ -942,134 +1271,184 @@ fun AddTripDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
-            Text(
-                "Add New Trip",
-                fontFamily = PaytoneOne,
-                fontSize = 32.sp,
-                color = DenimBlue
-            )
+           Box(
+    modifier = Modifier.fillMaxWidth(),
+    contentAlignment = Alignment.Center
+) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.padding(0.dp)) {
+        HorizontalDivider(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp),
+            color = SunsetOrange
+        )
+        Text(
+            "Add New Trip",
+            fontFamily = PaytoneOne,
+            fontSize = 28.sp,
+            textAlign = TextAlign.Center,
+            color = SunsetOrange
+        )
+        HorizontalDivider(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp, 8.dp, 8.dp, 0.dp),
+            color = SunsetOrange
+        )
+    }
+}
         },
-        text = {
-            Column {
-                TextField(
-                    value = destination,
-                    onValueChange = { destination = it },
-                    label = {
-                        Text(
-                            "Destination",
+            text = {
+                Column {
+                    TextField(
+                        value = destination,
+                        onValueChange = { destination = it },
+                        label = {
+                            Text(
+                                "Destination",
+                                fontFamily = GlacialIndifference,
+                                fontSize = 16.sp,
+                                modifier = Modifier.padding(top = 0.dp)
+                            )
+                        },
+                        shape = RoundedCornerShape(8.dp),
+                        colors = TextFieldDefaults.textFieldColors(
+                            containerColor = Color.Transparent,
+                            focusedIndicatorColor = SunsetOrange,
+                            unfocusedIndicatorColor = LightDenimBlue,
+                            focusedLabelColor = SunsetOrange,
+                            unfocusedLabelColor = LightDenimBlue,
+                            cursorColor = DenimBlue
+                        ),
+                        textStyle = TextStyle(
                             fontFamily = GlacialIndifference,
-                            fontSize = 16.sp
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = DenimBlue
                         )
-                    },
-                    shape = RoundedCornerShape(8.dp),
-                    colors = TextFieldDefaults.colors(
-                        focusedContainerColor = Color.White,
-                        unfocusedContainerColor = LightGray,
-                        focusedTextColor = Color.Black,
-                        unfocusedTextColor = Color.Black
-                    ),
-                    textStyle = TextStyle(fontFamily = GlacialIndifference)
-                )
-                TextField(
-                    value = startDate,
-                    onValueChange = { startDate = it },
-                    label = {
-                        Text(
-                            "Departure Date",
+                    )
+                    TextField(
+                        value = startDate,
+                        onValueChange = { startDate = it },
+                        label = {
+                            Text(
+                                "Departure Date",
+                                fontFamily = GlacialIndifference,
+                                fontSize = 16.sp
+                            )
+                        },
+                        shape = RoundedCornerShape(8.dp),
+                        colors = TextFieldDefaults.textFieldColors(
+                            containerColor = Color.Transparent,
+                            focusedIndicatorColor = SunsetOrange,
+                            unfocusedIndicatorColor = LightDenimBlue,
+                            focusedLabelColor = SunsetOrange,
+                            unfocusedLabelColor = LightDenimBlue,
+                            cursorColor = DenimBlue
+                        ),
+                        textStyle = TextStyle(
                             fontFamily = GlacialIndifference,
-                            fontSize = 16.sp
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = DenimBlue
                         )
-                    },
-                    shape = RoundedCornerShape(8.dp),
-                    colors = TextFieldDefaults.colors(
-                        focusedContainerColor = Color.White,
-                        unfocusedContainerColor = LightGray,
-                        focusedTextColor = Color.Black,
-                        unfocusedTextColor = Color.Black
-                    ),
-                    textStyle = TextStyle(fontFamily = GlacialIndifference)
-                )
-                TextField(
-                    value = endDate,
-                    onValueChange = { endDate = it },
-                    label = {
-                        Text(
-                            "Return Date",
+                    )
+                    TextField(
+                        value = endDate,
+                        onValueChange = { endDate = it },
+                        label = {
+                            Text(
+                                "Return Date",
+                                fontFamily = GlacialIndifference,
+                                fontSize = 16.sp
+                            )
+                        },
+                        shape = RoundedCornerShape(8.dp),
+                        colors = TextFieldDefaults.textFieldColors(
+                            containerColor = Color.Transparent,
+                            focusedIndicatorColor = SunsetOrange,
+                            unfocusedIndicatorColor = LightDenimBlue,
+                            focusedLabelColor = SunsetOrange,
+                            unfocusedLabelColor = LightDenimBlue,
+                            cursorColor = DenimBlue
+                        ),
+                        textStyle = TextStyle(
                             fontFamily = GlacialIndifference,
-                            fontSize = 16.sp
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = DenimBlue
                         )
-                    },
-                    shape = RoundedCornerShape(8.dp),
-                    colors = TextFieldDefaults.colors(
-                        focusedContainerColor = Color.White,
-                        unfocusedContainerColor = LightGray,
-                        focusedTextColor = Color.Black,
-                        unfocusedTextColor = Color.Black
-                    ),
-                    textStyle = TextStyle(fontFamily = GlacialIndifference)
-                )
-                TextField(
-                    value = countryCode,
-                    onValueChange = { countryCode = it },
-                    label = {
-                        Text(
-                            "Country Code",
-                            fontFamily = GlacialIndifference, // Apply custom font
-                            fontSize = 16.sp
+                    )
+                    TextField(
+                        value = countryCode,
+                        onValueChange = { countryCode = it },
+                        label = {
+                            Text(
+                                "Country Code",
+                                fontFamily = GlacialIndifference,
+                                fontSize = 16.sp
+                            )
+                        },
+                        shape = RoundedCornerShape(8.dp),
+                        colors = TextFieldDefaults.textFieldColors(
+                            containerColor = Color.Transparent,
+                            focusedIndicatorColor = SunsetOrange,
+                            unfocusedIndicatorColor = LightDenimBlue,
+                            focusedLabelColor = SunsetOrange,
+                            unfocusedLabelColor = LightDenimBlue,
+                            cursorColor = DenimBlue
+                        ),
+                        textStyle = TextStyle(
+                            fontFamily = GlacialIndifference,
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = DenimBlue
                         )
-                    },
-                    shape = RoundedCornerShape(8.dp),
-                    colors = TextFieldDefaults.colors(
-                        focusedContainerColor = Color.White,
-                        unfocusedContainerColor = LightGray,
-                        focusedTextColor = Color.Black,
-                        unfocusedTextColor = Color.Black
-                    ),
-                    textStyle = TextStyle(fontFamily = GlacialIndifference) // Apply custom font
-                )
-            }
-        },
-        confirmButton = {
-            Button(onClick = {
-                val trip = Trip(
-                    id = UUID.randomUUID().toString(),
-                    destination = destination,
-                    startDate = startDate,
-                    endDate = endDate,
-                    countryCode = countryCode,
-                    transportationOptions = emptyList(), // Initialize as empty
-                    budgetDetails = BudgetDetails(
-                        totalBudget = 0.0,
-                        items = emptyList()
-                    ),
-                    packingChecklist = emptyList()
-                )
-                onSubmit(trip)
-                onDismiss()
+                    )
+                }
             },
-                colors = ButtonDefaults.buttonColors(containerColor = DarkGreen) ) {
-                Text(
-                    "ADD TRIP",
-                    fontFamily = PaytoneOne, // Apply custom font
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
-                )
-            }
-        },
-        dismissButton = {
-            Button(onClick = onDismiss,
-                colors = ButtonDefaults.buttonColors(containerColor = DarkRed) ) {
-                Text(
-                    "CANCEL",
-                    fontFamily = PaytoneOne,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
+                    confirmButton = {
+                        Button(onClick = {
+                            val trip = Trip(
+                                id = UUID.randomUUID().toString(),
+                                destination = destination,
+                                startDate = startDate,
+                                endDate = endDate,
+                                countryCode = countryCode,
+                                transportationOptions = emptyList(), // Initialize as empty
+                                budgetDetails = BudgetDetails(
+                                    totalBudget = 0.0,
+                                    items = emptyList()
+                                ),
+                                packingChecklist = emptyList()
+                            )
+                            onSubmit(trip)
+                            onDismiss()
+                        },
+                            colors = ButtonDefaults.buttonColors(containerColor = SunsetOrange) ) {
+                            Text(
+                                "Add Trip",
+                                fontFamily = PaytoneOne, // Apply custom font
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White
+                            )
+                        }
+                    },
+                    dismissButton = {
+                        Button(onClick = onDismiss,
+                            colors = ButtonDefaults.buttonColors(containerColor = LightDenimBlue) ) {
+                            Text(
+                                "Cancel",
+                                fontFamily = PaytoneOne,
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White
 
-                )
-            }
-        }
+                            )
+                        }
+                    }
     )
 }
 
@@ -1129,6 +1508,10 @@ fun TripItemWithNoSelectionPreview() {
 @Preview(showBackground = true)
 @Composable
 fun LazyRowPreview() {
+    var showTransportationDialog by remember { mutableStateOf(false) }
+    var showChosenTransportationDialog by remember { mutableStateOf(false) } // Ensure this is declared
+
+
     LazyRow(
         modifier = Modifier
             .fillMaxWidth()
@@ -1162,13 +1545,20 @@ fun LazyRowPreview() {
             }
 
         }
-        item { Box(
-            modifier = Modifier
-                .size(200.dp)
-                .padding(8.dp)
-                .clip(RoundedCornerShape(25.dp))
-                .background(SunsetOrange)
-        ) {
+        item {
+            Box(
+                modifier = Modifier
+                    .size(200.dp)
+                    .padding(8.dp)
+                    .clip(RoundedCornerShape(25.dp))
+                    .background(
+                        brush = Brush.linearGradient(
+                            colors = listOf(SunsetOrange,LightSunsetOrange),
+                            start = Offset(0f, 0f), // Start at the top-left corner
+                            end = Offset.Infinite // End at the bottom-right corner
+                        )
+                    )
+            ){
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -1176,10 +1566,62 @@ fun LazyRowPreview() {
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(text = "Transportation Options", modifier = Modifier.align(Alignment.CenterHorizontally))
+                Box(
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                  Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.End,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+
+                    Icon(
+                        imageVector = Icons.Default.AddCircle,
+                        contentDescription = "Add Icon",
+                        tint = Color.White,
+                        modifier = Modifier
+                            .size(24.dp)
+                            .clickable {
+                                showTransportationDialog = true
+                            }
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Icon(
+                        imageVector = Icons.Default.Info,
+                        contentDescription = "Info Icon",
+                        tint = Color.White,
+                        modifier = Modifier
+                            .size(24.dp)
+                            .clickable {
+                                showChosenTransportationDialog = true
+                            }
+                    )
+                }
+                }
+                Divider(color = Color.White,
+                    thickness = 2.dp,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp)
+                )
+
+                            Text(
+                    text = "Transportation",
+                    modifier = Modifier.align(Alignment.CenterHorizontally),
+                    style = TextStyle(
+                        fontFamily = PaytoneOne,
+                        fontSize = 21.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
+                )
                 Spacer(modifier = Modifier.height(8.dp))
-                Text(text = "Option 1", modifier = Modifier.align(Alignment.CenterHorizontally))
-                Text(text = "Option 2", modifier = Modifier.align(Alignment.CenterHorizontally))
+                Icon(
+                    imageVector = Icons.Default.DirectionsCar,
+                    contentDescription = "Transportation Icon",
+                    tint = Color.White,
+                    modifier = Modifier.size(80.dp)
+                )
             }
         } }
         item { Box(
@@ -1365,34 +1807,30 @@ fun TripDetailsPreview() {
     )
 }
 
-@Preview
-@Composable
-fun AddTripDialogPreview() {
-    val tripViewModel = TripViewModel()
-    AddTripDialog(
-        showDialog = true,
-        onDismiss = { },
-        onSubmit = { },
-        tripViewModel = tripViewModel
-    )
-}
-
 @Preview(showBackground = true)
 @Composable
-fun EditTripDialogPreview() {
-    val trip = Trip(
-        id = "1",
-        destination = "Destination",
-        startDate = "2022-01-01",
-        endDate = "2022-01-10",
-        countryCode = "PH",
-        transportationOptions = emptyList(),
-        budgetDetails = BudgetDetails(0.0, emptyList()),
-        packingChecklist = emptyList()
+fun ChosenTransportationDialogPreview() {
+    val sampleTransportationOptions = listOf(
+        TransportationOption("Commercial flights"),
+        TransportationOption("Car rentals"),
+        TransportationOption("Ferries")
     )
-    EditTripDialog(
-        trip = trip,
-        onDismiss = { },
-        onSubmit = { }
-    )
+
+    JetSetGoTheme {
+        ChosenTransportationDialog(
+            showDialog = true,
+            onDismiss = { /* Do nothing */ },
+            selectedTransportationOptions = sampleTransportationOptions,
+            onDelete = { /* Do nothing */ }
+        )
+    }
 }
+
+
+
+
+
+
+
+
+

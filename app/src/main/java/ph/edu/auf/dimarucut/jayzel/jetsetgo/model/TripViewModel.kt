@@ -1,5 +1,6 @@
 package ph.edu.auf.dimarucut.jayzel.jetsetgo.model
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -10,17 +11,6 @@ import ph.edu.auf.dimarucut.jayzel.jetsetgo.models.TransportationOption
 class TripViewModel : ViewModel() {
     private val _trips = MutableStateFlow<List<Trip>>(emptyList())
     val trips: StateFlow<List<Trip>> = _trips
-
-    fun getTransportationOptions(tripId: String): List<TransportationOption> {
-        val trip = _trips.value.find { it.id == tripId }
-        return trip?.transportationOptions ?: listOf(
-            TransportationOption("Air Travel", "Commercial flights, charter flights, private jets"),
-            TransportationOption("Ground Transportation", "Car rentals, taxis, buses, trains, motorbikes"),
-            TransportationOption("Water Travel", "Ferries, cruises, yachts, speedboats"),
-            TransportationOption("Public Transport", "City buses, subways, trams"),
-            TransportationOption("Specialty", "Cable cars, tuk-tuks, horse-drawn carriages")
-        )
-    }
 
 
     fun addTrip(trip: Trip) {

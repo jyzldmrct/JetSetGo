@@ -15,10 +15,12 @@ val Pink40 = Color(0xFF7D5260)
 val DenimBlue = Color(0xFF193948)
 val SunsetOrange = Color(0xFFE76268)
 val LightBlue = Color(0xFFC1DAFA)
-val SkyBlue = Color(0xFF55acbd)
+val SkyBlue = Color(0xFF03A9F4)
 val DirtyWhite = Color(0xFFF5F5F5)
 val LightDenimBlue = Color(0xFF48596E)
 
+
+val LightSunsetOrange = Color(0xFFFF9A9A)
 
 val DarkRed = Color(0xFF711a00)
 val DarkGreen = Color(0xFF194800)
