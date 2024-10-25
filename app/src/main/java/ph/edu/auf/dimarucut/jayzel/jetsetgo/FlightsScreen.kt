@@ -1094,7 +1094,10 @@ fun PackingChecklistScreen(packingItems: List<PackingItem>, onAddItem: (String) 
     if (showDialog) {
         AlertDialog(
             onDismissRequest = { showDialog = false },
-            title = { Text("Travel Essentials List") },
+            title = { Text("Travel Essentials List",
+                fontFamily = PaytoneOne,
+                fontSize = 28.sp,
+                color = SkyBlue) },
             text = {
                 Column {
                     // Show all items (checked and unchecked)
@@ -1160,22 +1163,40 @@ fun PackingChecklistScreen(packingItems: List<PackingItem>, onAddItem: (String) 
             .clickable { showDialog = true },
         contentAlignment = Alignment.Center
     ) {
-        if (packingItemsState.all { it.isChecked }) {
-            Text(
-                text = "All items checked!",
-                modifier = Modifier.align(Alignment.Center),
-                textAlign = TextAlign.Center,
-                color = Color.Gray
-            )
-        } else {
-            Text(
-                text = "Tap here to view your packing checklist.",
-                modifier = Modifier.align(Alignment.Center),
-                textAlign = TextAlign.Center,
-                color = Color.Gray
-            )
+        when {
+            packingItemsState.isEmpty() -> {
+                Text(
+                    text = "No packing items available.",
+                    modifier = Modifier.align(Alignment.Center),
+                    textAlign = TextAlign.Center,
+                    color = Color.White,
+                    fontFamily = PaytoneOne,
+                    fontSize = 20.sp
+                )
+            }
+            packingItemsState.all { it.isChecked } -> {
+                Text(
+                    text = "All items checked!",
+                    modifier = Modifier.align(Alignment.Center),
+                    textAlign = TextAlign.Center,
+                    color = Color.White,
+                    fontFamily = PaytoneOne,
+                    fontSize = 20.sp
+                )
+            }
+            else -> {
+                Text(
+                    text = "Tap here to view your packing checklist.",
+                    modifier = Modifier.align(Alignment.Center),
+                    textAlign = TextAlign.Center,
+                    color = Color.White,
+                    fontFamily = PaytoneOne,
+                    fontSize = 20.sp
+                )
+            }
         }
     }
+
 }
 
 
