@@ -1083,6 +1083,7 @@ fun BudgetCalculator(budgetDetails: BudgetDetails, countryCode: String) {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PackingChecklistScreen(packingItems: List<PackingItem>, onAddItem: (String) -> Unit) {
     var showDialog by remember { mutableStateOf(false) }
@@ -1094,10 +1095,24 @@ fun PackingChecklistScreen(packingItems: List<PackingItem>, onAddItem: (String) 
     if (showDialog) {
         AlertDialog(
             onDismissRequest = { showDialog = false },
-            title = { Text("Travel Essentials List",
-                fontFamily = PaytoneOne,
-                fontSize = 28.sp,
-                color = SkyBlue) },
+            title = {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally // Center aligns the contents horizontally
+                ) {
+                    Divider(color = SkyBlue, thickness = 1.dp)
+
+                    Text(
+                        text = "Travel Essentials List",
+                        fontFamily = PaytoneOne,
+                        fontSize = 24.sp,
+                        color = SkyBlue
+                    )
+
+                    Divider(color = SkyBlue, thickness = 1.dp)
+                }
+            },
+
             text = {
                 Column {
                     // Show all items (checked and unchecked)
@@ -1114,9 +1129,17 @@ fun PackingChecklistScreen(packingItems: List<PackingItem>, onAddItem: (String) 
                                     if (index != -1) {
                                         packingItemsState[index] = item.copy(isChecked = checked)
                                     }
-                                }
+                                },
+                                colors = CheckboxDefaults.colors(
+                                    checkedColor = SkyBlue,
+                                    uncheckedColor = LightDenimBlue
+                                )
                             )
-                            Text(text = item.name)
+                            Text(text = item.name,
+                                modifier = Modifier.padding(start = 8.dp),
+                                fontFamily = GlacialIndifference,
+                                fontSize = 18.sp, // Adjust font size
+                                color = if (item.isChecked) DenimBlue else LightDenimBlue)
                         }
                     }
 
@@ -1127,7 +1150,20 @@ fun PackingChecklistScreen(packingItems: List<PackingItem>, onAddItem: (String) 
                         value = newItemName,
                         onValueChange = { newItemName = it },
                         label = { Text("Add New Item") },
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
+                        textStyle = TextStyle(
+                            fontFamily = GlacialIndifference,
+                            fontSize = 24.sp,
+                            color = DenimBlue
+                        ),
+                        colors = TextFieldDefaults.textFieldColors(
+                            containerColor = Color.Transparent,
+                            focusedIndicatorColor = SkyBlue,
+                            unfocusedIndicatorColor = LightDenimBlue,
+                            focusedLabelColor = SkyBlue,
+                            unfocusedLabelColor = LightDenimBlue,
+                            cursorColor = DenimBlue
+                        )
                     )
 
                     Spacer(modifier = Modifier.height(8.dp))
@@ -1140,15 +1176,30 @@ fun PackingChecklistScreen(packingItems: List<PackingItem>, onAddItem: (String) 
                                 newItemName = ""
                             }
                         },
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.buttonColors(containerColor = SkyBlue)
                     ) {
-                        Text("Add Item")
+                        Text("Add Item",
+                            fontFamily = PaytoneOne,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
                     }
                 }
             },
             confirmButton = {
-                Button(onClick = { showDialog = false }) {
-                    Text("Close")
+                Button(
+                    onClick = { showDialog = false },
+                    colors = ButtonDefaults.buttonColors(containerColor = DenimBlue) // Set the background color to Denim Blue
+                ) {
+                    Text(
+                        "Close",
+                        fontFamily = PaytoneOne,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White // Text color remains white
+                    )
                 }
             }
         )
