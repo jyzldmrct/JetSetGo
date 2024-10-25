@@ -75,8 +75,8 @@ fun FlightsScreen(tripViewModel: TripViewModel, modifier: Modifier = Modifier) {
                 TransportationOption("Commercial flights"),
                 TransportationOption("Charter flights"),
                 TransportationOption("Private jets"),
-                TransportationOption("Domestic flights"),  // Specific to the Philippines
-                TransportationOption("Low-cost carriers")  // Popular in the Philippines
+                TransportationOption("Domestic flights"),
+                TransportationOption("Low-cost carriers")
             )
         ),
         TransportationCategory(
@@ -353,7 +353,20 @@ fun FlightsScreen(tripViewModel: TripViewModel, modifier: Modifier = Modifier) {
                             }
                         } }
                     item {
-                        Box(modifier = boxModifier) {
+                        Box(
+                            modifier = Modifier
+                                .size(200.dp)
+                                .padding(8.dp)
+                                .clip(RoundedCornerShape(25.dp))
+                                .background(
+                                    brush = Brush.linearGradient(
+                                        colors = listOf(SunsetOrange, LightSunsetOrange),
+                                        start = Offset(200f, 0f),   // Start at the top-right corner
+                                        end = Offset(0f, 200f)      // End at the bottom-left corner
+                                    )
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
                             BudgetCalculator(
                                 budgetDetails = trip.budgetDetails,
                                 countryCode = trip.countryCode
@@ -540,17 +553,17 @@ fun FlightsScreen(tripViewModel: TripViewModel, modifier: Modifier = Modifier) {
         }
     }
 
-if (showChosenTransportationDialog) {
-    ChosenTransportationDialog(
-        showDialog = showChosenTransportationDialog,
-        onDismiss = { showChosenTransportationDialog = false },
-        selectedTransportationOptions = selectedTransportationOptions,
-        onDelete = { transportationOption ->
-            selectedTransportationOptions = selectedTransportationOptions - transportationOption // Remove the selected option from the list
-            Toast.makeText(context, "Transportation option removed: ${transportationOption.name}", Toast.LENGTH_SHORT).show()
-        }
-    )
-}
+    if (showChosenTransportationDialog) {
+        ChosenTransportationDialog(
+            showDialog = showChosenTransportationDialog,
+            onDismiss = { showChosenTransportationDialog = false },
+            selectedTransportationOptions = selectedTransportationOptions,
+            onDelete = { transportationOption ->
+                selectedTransportationOptions = selectedTransportationOptions - transportationOption // Remove the selected option from the list
+                Toast.makeText(context, "Transportation option removed: ${transportationOption.name}", Toast.LENGTH_SHORT).show()
+            }
+        )
+    }
 }
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -835,6 +848,7 @@ fun EditTripDialog(trip: Trip, onDismiss: () -> Unit, onSubmit: (Trip) -> Unit) 
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BudgetCalculator(budgetDetails: BudgetDetails, countryCode: String) {
     var totalBudget by remember { mutableStateOf(budgetDetails.totalBudget) }
@@ -844,31 +858,74 @@ fun BudgetCalculator(budgetDetails: BudgetDetails, countryCode: String) {
     var isExpanded by remember { mutableStateOf(false) }
     var isAddingExpense by remember { mutableStateOf(false) }
 
+
+
     // Get currency symbol based on the country code
     val locale = Locale("", countryCode)
     val currencySymbol = Currency.getInstance(locale).symbol
 
     val totalExpenses = expenses.sumOf { it.cost }
-    val remainingBudget = totalBudget - totalExpenses
+    val remainingBudget = totalBudget - expenses.sumOf { it.cost }
 
-    // Box that shows the summary and triggers the dialog
     Box(
         modifier = Modifier
-            .fillMaxSize()
+            .fillMaxWidth()
             .padding(8.dp)
             .clickable { isExpanded = true },
         contentAlignment = Alignment.Center
     ) {
-        Text(text = "Remaining Budget: $currencySymbol${remainingBudget}", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight()
+                .padding(8.dp),
+            contentAlignment = Alignment.Center  // Centers the content inside the Box
+        ) {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally  // Centers the content inside the Column
+            ) {
+                Text(
+                    text = "Balance Left:",
+                    fontSize = 20.sp,
+                    fontFamily = PaytoneOne,
+                    color = Color.White
+                )
+                Text(
+                    text = "$currencySymbol${remainingBudget}",
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                    fontFamily = GlacialIndifference,
+                    color = Color.White
+                )
+            }
+        }
     }
 
-    // Show dialog if isExpanded is true
+        // Show dialog if isExpanded is true
     if (isExpanded) {
         AlertDialog(
             onDismissRequest = { isExpanded = false },
-            title = {
-                Text(text = "Budget Calculator", fontSize = 20.sp, fontWeight = FontWeight.Bold)
-            },
+                title = {
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Divider(color = SkyBlue, thickness = 1.dp)
+                        Box(
+                            modifier = Modifier.fillMaxWidth(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "Budget Calculator",
+                                fontSize = 28.sp,
+                                fontFamily = PaytoneOne,
+                                color = SkyBlue,
+                            )
+                        }
+                        Divider(color = SkyBlue, thickness = 1.dp)
+                    }
+                },
             text = {
                 Column(
                     modifier = Modifier
@@ -880,19 +937,46 @@ fun BudgetCalculator(budgetDetails: BudgetDetails, countryCode: String) {
                     TextField(
                         value = totalBudget.toString(),
                         onValueChange = { totalBudget = it.toDoubleOrNull() ?: 0.0 },
-                        label = { Text("Total Budget") },
-                        modifier = Modifier.fillMaxWidth()
+                        label = { Text("Total Budget",
+                            fontFamily = GlacialIndifference,
+                            fontSize = 16.sp
+                        ) },
+                        textStyle = TextStyle(
+                            fontFamily = GlacialIndifference,
+                            fontSize = 24.sp
+                        ),
+                        colors = TextFieldDefaults.textFieldColors(
+                            containerColor = Color.Transparent,
+                            focusedIndicatorColor = SkyBlue,
+                            unfocusedIndicatorColor = LightDenimBlue,
+                            focusedLabelColor = SkyBlue,
+                            unfocusedLabelColor = LightDenimBlue,
+                            cursorColor = DenimBlue
+                        )
                     )
-
                     Spacer(modifier = Modifier.height(8.dp))
 
                     if (isAddingExpense) {
-                        // Show expense input fields only if adding an expense
+
                         TextField(
                             value = expenseName,
                             onValueChange = { expenseName = it },
-                            label = { Text("Expense Name") },
-                            modifier = Modifier.fillMaxWidth()
+                            label = { Text("Expense Name",
+                                fontFamily = GlacialIndifference,
+                                fontSize = 16.sp) },
+
+                            textStyle = TextStyle(
+                                fontFamily = GlacialIndifference,
+                                fontSize = 24.sp
+                            ),
+                            colors = TextFieldDefaults.textFieldColors(
+                                containerColor = Color.Transparent,
+                                focusedIndicatorColor = SkyBlue,
+                                unfocusedIndicatorColor = LightDenimBlue,
+                                focusedLabelColor = SkyBlue,
+                                unfocusedLabelColor = LightDenimBlue,
+                                cursorColor = DenimBlue
+                            )
                         )
 
                         Spacer(modifier = Modifier.height(8.dp))
@@ -900,8 +984,22 @@ fun BudgetCalculator(budgetDetails: BudgetDetails, countryCode: String) {
                         TextField(
                             value = expenseCost,
                             onValueChange = { expenseCost = it },
-                            label = { Text("Expense Cost ($currencySymbol)") },
-                            modifier = Modifier.fillMaxWidth()
+                            label = { Text("Expense Cost",
+                                fontFamily = GlacialIndifference,
+                                fontSize = 16.sp) },
+
+                            textStyle = TextStyle(
+                                fontFamily = GlacialIndifference,
+                                fontSize = 24.sp
+                            ),
+                            colors = TextFieldDefaults.textFieldColors(
+                                containerColor = Color.Transparent,
+                                focusedIndicatorColor = SkyBlue,
+                                unfocusedIndicatorColor = LightDenimBlue,
+                                focusedLabelColor = SkyBlue,
+                                unfocusedLabelColor = LightDenimBlue,
+                                cursorColor = DenimBlue
+                            )
                         )
 
                         Spacer(modifier = Modifier.height(8.dp))
@@ -910,43 +1008,75 @@ fun BudgetCalculator(budgetDetails: BudgetDetails, countryCode: String) {
                             val cost = expenseCost.toDoubleOrNull() ?: 0.0
                             if (expenseName.isNotBlank() && cost > 0.0) {
                                 expenses = expenses + BudgetItem(expenseName, cost)
-                                totalBudget -= cost
                                 expenseName = ""
                                 expenseCost = ""
                                 isAddingExpense = false
                             }
-                        }) {
-                            Text("Add Expense")
+                        },     colors = ButtonDefaults.buttonColors(containerColor = SkyBlue)
+
+                        ) {
+                            Text(
+                                "Add Expense",
+                                fontFamily = PaytoneOne,
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White
+                            )
                         }
 
                         Spacer(modifier = Modifier.height(8.dp))
                     }
 
-                    // Only show "Add More Expenses" button if not currently adding an expense
                     if (!isAddingExpense) {
-                        Button(onClick = { isAddingExpense = true }) {
-                            Text("Add More Expenses")
+                        Button(onClick = { isAddingExpense = true },
+                            colors = ButtonDefaults.buttonColors(containerColor = SkyBlue)
+                        ) {
+                            Text("Add More Expenses",
+                                fontFamily = PaytoneOne,
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White
+                            )
                         }
                     }
 
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    Text(text = "Expenses:", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                    Text(text = "Expenses:", fontFamily = GlacialIndifference, fontSize = 16.sp)
 
                     LazyColumn {
                         items(expenses) { expense ->
-                            Text(text = "${expense.name}: $currencySymbol${expense.cost}")
+                            Text(text = "${expense.name}: $currencySymbol${expense.cost}",
+                                fontFamily = GlacialIndifference,
+                                fontSize = 20.sp,
+                                fontWeight = FontWeight.Bold
+                                )
                         }
                     }
 
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    Text(text = "Remaining Budget: $currencySymbol${remainingBudget}", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                    Text(
+                        text = "Remaining Budget:",
+                        fontFamily = GlacialIndifference,
+                        fontSize = 16.sp
+                    )
+                    Text(
+                        text = "$currencySymbol${remainingBudget}",
+                        fontFamily = GlacialIndifference,
+                        fontSize = 20.sp
+                    )
                 }
             },
             confirmButton = {
-                Button(onClick = { isExpanded = false }) {
-                    Text("Close")
+                Button(onClick = { isExpanded = false },
+                    colors = ButtonDefaults.buttonColors(containerColor = LightDenimBlue)
+                ) {
+                    Text("Close",
+                        fontFamily = PaytoneOne,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White)
                 }
             }
         )
@@ -1189,7 +1319,7 @@ fun TransportationDialog(
             }
         },
         confirmButton = { {
-            }
+        }
         }
     )
 }
@@ -1271,184 +1401,184 @@ fun AddTripDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
-           Box(
-    modifier = Modifier.fillMaxWidth(),
-    contentAlignment = Alignment.Center
-) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.padding(0.dp)) {
-        HorizontalDivider(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp),
-            color = SunsetOrange
-        )
-        Text(
-            "Add New Trip",
-            fontFamily = PaytoneOne,
-            fontSize = 28.sp,
-            textAlign = TextAlign.Center,
-            color = SunsetOrange
-        )
-        HorizontalDivider(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp, 8.dp, 8.dp, 0.dp),
-            color = SunsetOrange
-        )
-    }
-}
-        },
-            text = {
-                Column {
-                    TextField(
-                        value = destination,
-                        onValueChange = { destination = it },
-                        label = {
-                            Text(
-                                "Destination",
-                                fontFamily = GlacialIndifference,
-                                fontSize = 16.sp,
-                                modifier = Modifier.padding(top = 0.dp)
-                            )
-                        },
-                        shape = RoundedCornerShape(8.dp),
-                        colors = TextFieldDefaults.textFieldColors(
-                            containerColor = Color.Transparent,
-                            focusedIndicatorColor = SunsetOrange,
-                            unfocusedIndicatorColor = LightDenimBlue,
-                            focusedLabelColor = SunsetOrange,
-                            unfocusedLabelColor = LightDenimBlue,
-                            cursorColor = DenimBlue
-                        ),
-                        textStyle = TextStyle(
-                            fontFamily = GlacialIndifference,
-                            fontSize = 24.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = DenimBlue
-                        )
+            Box(
+                modifier = Modifier.fillMaxWidth(),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.padding(0.dp)) {
+                    HorizontalDivider(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp),
+                        color = SunsetOrange
                     )
-                    TextField(
-                        value = startDate,
-                        onValueChange = { startDate = it },
-                        label = {
-                            Text(
-                                "Departure Date",
-                                fontFamily = GlacialIndifference,
-                                fontSize = 16.sp
-                            )
-                        },
-                        shape = RoundedCornerShape(8.dp),
-                        colors = TextFieldDefaults.textFieldColors(
-                            containerColor = Color.Transparent,
-                            focusedIndicatorColor = SunsetOrange,
-                            unfocusedIndicatorColor = LightDenimBlue,
-                            focusedLabelColor = SunsetOrange,
-                            unfocusedLabelColor = LightDenimBlue,
-                            cursorColor = DenimBlue
-                        ),
-                        textStyle = TextStyle(
-                            fontFamily = GlacialIndifference,
-                            fontSize = 24.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = DenimBlue
-                        )
+                    Text(
+                        "Add New Trip",
+                        fontFamily = PaytoneOne,
+                        fontSize = 28.sp,
+                        textAlign = TextAlign.Center,
+                        color = SunsetOrange
                     )
-                    TextField(
-                        value = endDate,
-                        onValueChange = { endDate = it },
-                        label = {
-                            Text(
-                                "Return Date",
-                                fontFamily = GlacialIndifference,
-                                fontSize = 16.sp
-                            )
-                        },
-                        shape = RoundedCornerShape(8.dp),
-                        colors = TextFieldDefaults.textFieldColors(
-                            containerColor = Color.Transparent,
-                            focusedIndicatorColor = SunsetOrange,
-                            unfocusedIndicatorColor = LightDenimBlue,
-                            focusedLabelColor = SunsetOrange,
-                            unfocusedLabelColor = LightDenimBlue,
-                            cursorColor = DenimBlue
-                        ),
-                        textStyle = TextStyle(
-                            fontFamily = GlacialIndifference,
-                            fontSize = 24.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = DenimBlue
-                        )
-                    )
-                    TextField(
-                        value = countryCode,
-                        onValueChange = { countryCode = it },
-                        label = {
-                            Text(
-                                "Country Code",
-                                fontFamily = GlacialIndifference,
-                                fontSize = 16.sp
-                            )
-                        },
-                        shape = RoundedCornerShape(8.dp),
-                        colors = TextFieldDefaults.textFieldColors(
-                            containerColor = Color.Transparent,
-                            focusedIndicatorColor = SunsetOrange,
-                            unfocusedIndicatorColor = LightDenimBlue,
-                            focusedLabelColor = SunsetOrange,
-                            unfocusedLabelColor = LightDenimBlue,
-                            cursorColor = DenimBlue
-                        ),
-                        textStyle = TextStyle(
-                            fontFamily = GlacialIndifference,
-                            fontSize = 24.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = DenimBlue
-                        )
+                    HorizontalDivider(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp, 8.dp, 8.dp, 0.dp),
+                        color = SunsetOrange
                     )
                 }
-            },
-                    confirmButton = {
-                        Button(onClick = {
-                            val trip = Trip(
-                                id = UUID.randomUUID().toString(),
-                                destination = destination,
-                                startDate = startDate,
-                                endDate = endDate,
-                                countryCode = countryCode,
-                                transportationOptions = emptyList(), // Initialize as empty
-                                budgetDetails = BudgetDetails(
-                                    totalBudget = 0.0,
-                                    items = emptyList()
-                                ),
-                                packingChecklist = emptyList()
-                            )
-                            onSubmit(trip)
-                            onDismiss()
-                        },
-                            colors = ButtonDefaults.buttonColors(containerColor = SunsetOrange) ) {
-                            Text(
-                                "Add Trip",
-                                fontFamily = PaytoneOne, // Apply custom font
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color.White
-                            )
-                        }
+            }
+        },
+        text = {
+            Column {
+                TextField(
+                    value = destination,
+                    onValueChange = { destination = it },
+                    label = {
+                        Text(
+                            "Destination",
+                            fontFamily = GlacialIndifference,
+                            fontSize = 16.sp,
+                            modifier = Modifier.padding(top = 0.dp)
+                        )
                     },
-                    dismissButton = {
-                        Button(onClick = onDismiss,
-                            colors = ButtonDefaults.buttonColors(containerColor = LightDenimBlue) ) {
-                            Text(
-                                "Cancel",
-                                fontFamily = PaytoneOne,
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color.White
+                    shape = RoundedCornerShape(8.dp),
+                    colors = TextFieldDefaults.textFieldColors(
+                        containerColor = Color.Transparent,
+                        focusedIndicatorColor = SunsetOrange,
+                        unfocusedIndicatorColor = LightDenimBlue,
+                        focusedLabelColor = SunsetOrange,
+                        unfocusedLabelColor = LightDenimBlue,
+                        cursorColor = DenimBlue
+                    ),
+                    textStyle = TextStyle(
+                        fontFamily = GlacialIndifference,
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = DenimBlue
+                    )
+                )
+                TextField(
+                    value = startDate,
+                    onValueChange = { startDate = it },
+                    label = {
+                        Text(
+                            "Departure Date",
+                            fontFamily = GlacialIndifference,
+                            fontSize = 16.sp
+                        )
+                    },
+                    shape = RoundedCornerShape(8.dp),
+                    colors = TextFieldDefaults.textFieldColors(
+                        containerColor = Color.Transparent,
+                        focusedIndicatorColor = SunsetOrange,
+                        unfocusedIndicatorColor = LightDenimBlue,
+                        focusedLabelColor = SunsetOrange,
+                        unfocusedLabelColor = LightDenimBlue,
+                        cursorColor = DenimBlue
+                    ),
+                    textStyle = TextStyle(
+                        fontFamily = GlacialIndifference,
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = DenimBlue
+                    )
+                )
+                TextField(
+                    value = endDate,
+                    onValueChange = { endDate = it },
+                    label = {
+                        Text(
+                            "Return Date",
+                            fontFamily = GlacialIndifference,
+                            fontSize = 16.sp
+                        )
+                    },
+                    shape = RoundedCornerShape(8.dp),
+                    colors = TextFieldDefaults.textFieldColors(
+                        containerColor = Color.Transparent,
+                        focusedIndicatorColor = SunsetOrange,
+                        unfocusedIndicatorColor = LightDenimBlue,
+                        focusedLabelColor = SunsetOrange,
+                        unfocusedLabelColor = LightDenimBlue,
+                        cursorColor = DenimBlue
+                    ),
+                    textStyle = TextStyle(
+                        fontFamily = GlacialIndifference,
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = DenimBlue
+                    )
+                )
+                TextField(
+                    value = countryCode,
+                    onValueChange = { countryCode = it },
+                    label = {
+                        Text(
+                            "Country Code",
+                            fontFamily = GlacialIndifference,
+                            fontSize = 16.sp
+                        )
+                    },
+                    shape = RoundedCornerShape(8.dp),
+                    colors = TextFieldDefaults.textFieldColors(
+                        containerColor = Color.Transparent,
+                        focusedIndicatorColor = SunsetOrange,
+                        unfocusedIndicatorColor = LightDenimBlue,
+                        focusedLabelColor = SunsetOrange,
+                        unfocusedLabelColor = LightDenimBlue,
+                        cursorColor = DenimBlue
+                    ),
+                    textStyle = TextStyle(
+                        fontFamily = GlacialIndifference,
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = DenimBlue
+                    )
+                )
+            }
+        },
+        confirmButton = {
+            Button(onClick = {
+                val trip = Trip(
+                    id = UUID.randomUUID().toString(),
+                    destination = destination,
+                    startDate = startDate,
+                    endDate = endDate,
+                    countryCode = countryCode,
+                    transportationOptions = emptyList(), // Initialize as empty
+                    budgetDetails = BudgetDetails(
+                        totalBudget = 0.0,
+                        items = emptyList()
+                    ),
+                    packingChecklist = emptyList()
+                )
+                onSubmit(trip)
+                onDismiss()
+            },
+                colors = ButtonDefaults.buttonColors(containerColor = SunsetOrange) ) {
+                Text(
+                    "Add Trip",
+                    fontFamily = PaytoneOne, // Apply custom font
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
+            }
+        },
+        dismissButton = {
+            Button(onClick = onDismiss,
+                colors = ButtonDefaults.buttonColors(containerColor = LightDenimBlue) ) {
+                Text(
+                    "Cancel",
+                    fontFamily = PaytoneOne,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
 
-                            )
-                        }
-                    }
+                )
+            }
+        }
     )
 }
 
@@ -1559,71 +1689,71 @@ fun LazyRowPreview() {
                         )
                     )
             ){
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(8.dp),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Box(
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                  Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.End,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-
-                    Icon(
-                        imageVector = Icons.Default.AddCircle,
-                        contentDescription = "Add Icon",
-                        tint = Color.White,
-                        modifier = Modifier
-                            .size(24.dp)
-                            .clickable {
-                                showTransportationDialog = true
-                            }
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Icon(
-                        imageVector = Icons.Default.Info,
-                        contentDescription = "Info Icon",
-                        tint = Color.White,
-                        modifier = Modifier
-                            .size(24.dp)
-                            .clickable {
-                                showChosenTransportationDialog = true
-                            }
-                    )
-                }
-                }
-                Divider(color = Color.White,
-                    thickness = 2.dp,
+                Column(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp)
-                )
+                        .fillMaxSize()
+                        .padding(8.dp),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Box(
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.End,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
 
-                            Text(
-                    text = "Transportation",
-                    modifier = Modifier.align(Alignment.CenterHorizontally),
-                    style = TextStyle(
-                        fontFamily = PaytoneOne,
-                        fontSize = 21.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
+                            Icon(
+                                imageVector = Icons.Default.AddCircle,
+                                contentDescription = "Add Icon",
+                                tint = Color.White,
+                                modifier = Modifier
+                                    .size(24.dp)
+                                    .clickable {
+                                        showTransportationDialog = true
+                                    }
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Icon(
+                                imageVector = Icons.Default.Info,
+                                contentDescription = "Info Icon",
+                                tint = Color.White,
+                                modifier = Modifier
+                                    .size(24.dp)
+                                    .clickable {
+                                        showChosenTransportationDialog = true
+                                    }
+                            )
+                        }
+                    }
+                    Divider(color = Color.White,
+                        thickness = 2.dp,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp)
                     )
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Icon(
-                    imageVector = Icons.Default.DirectionsCar,
-                    contentDescription = "Transportation Icon",
-                    tint = Color.White,
-                    modifier = Modifier.size(80.dp)
-                )
-            }
-        } }
+
+                    Text(
+                        text = "Transportation",
+                        modifier = Modifier.align(Alignment.CenterHorizontally),
+                        style = TextStyle(
+                            fontFamily = PaytoneOne,
+                            fontSize = 21.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Icon(
+                        imageVector = Icons.Default.DirectionsCar,
+                        contentDescription = "Transportation Icon",
+                        tint = Color.White,
+                        modifier = Modifier.size(80.dp)
+                    )
+                }
+            } }
         item { Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -1665,56 +1795,56 @@ fun LazyRowPreview() {
 fun TripDetailsPreview() {
     AlertDialog(
         onDismissRequest = { },
-       title = {
-    Box(
-        modifier = Modifier.fillMaxWidth(),
-        contentAlignment = Alignment.Center
-    ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Row(
+        title = {
+            Box(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End
+                contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    imageVector = Icons.Default.Edit,
-                    contentDescription = "Info Icon",
-                    modifier = Modifier
-                        .padding(end = 8.dp)
-                        .size(20.dp),
-                    tint = LightDenimBlue
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.End
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Edit,
+                            contentDescription = "Info Icon",
+                            modifier = Modifier
+                                .padding(end = 8.dp)
+                                .size(20.dp),
+                            tint = LightDenimBlue
 
-                )
-                Icon(
-                    imageVector = Icons.Default.Clear,
-                    contentDescription = "Add Icon",
-                    modifier = Modifier
-                        .size(20.dp),
-                    tint = LightDenimBlue
-                )
+                        )
+                        Icon(
+                            imageVector = Icons.Default.Clear,
+                            contentDescription = "Add Icon",
+                            modifier = Modifier
+                                .size(20.dp),
+                            tint = LightDenimBlue
+                        )
+                    }
+                    HorizontalDivider(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp),
+                        color = LightDenimBlue
+                    )
+                    Text(
+                        "Trip Details",
+                        fontFamily = PaytoneOne,
+                        fontSize = 28.sp,
+                        textAlign = TextAlign.Center,
+                        color = DenimBlue
+                    )
+
+                    HorizontalDivider(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp, 8.dp, 8.dp, 0.dp),
+                        color = LightDenimBlue
+                    )
+                }
             }
-            HorizontalDivider(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(8.dp),
-                color = LightDenimBlue
-            )
-            Text(
-                "Trip Details",
-                fontFamily = PaytoneOne,
-                fontSize = 28.sp,
-                textAlign = TextAlign.Center,
-                color = DenimBlue
-            )
-
-            HorizontalDivider(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(8.dp, 8.dp, 8.dp, 0.dp),
-                color = LightDenimBlue
-            )
-        }
-    }
-},
+        },
         text = {
             Box(
                 modifier = Modifier
@@ -1825,7 +1955,6 @@ fun ChosenTransportationDialogPreview() {
         )
     }
 }
-
 
 
 
