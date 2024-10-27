@@ -47,10 +47,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.ExperimentalFoundationApi
+import ph.edu.auf.dimarucut.jayzel.jetsetgo.model.SharedViewModel
 
 
 @Composable
-fun FlightsScreen(tripViewModel: TripViewModel, modifier: Modifier = Modifier) {
+fun FlightsScreen(tripViewModel: TripViewModel, sharedViewModel: SharedViewModel, modifier: Modifier = Modifier) {
 
     val trips by tripViewModel.trips.collectAsState()
     var showDialog by remember { mutableStateOf(false) }
@@ -214,9 +215,10 @@ fun FlightsScreen(tripViewModel: TripViewModel, modifier: Modifier = Modifier) {
                     onDismiss = { showDialog = false },
                     onSubmit = { trip ->
                         tripViewModel.addTrip(trip)
-                        Toast.makeText(context, "Trip added!", Toast.LENGTH_SHORT).show()
+                        showDialog = false
                     },
-                    tripViewModel = tripViewModel
+                    tripViewModel = tripViewModel,
+                    sharedViewModel = sharedViewModel
                 )
             }
         }
@@ -902,30 +904,30 @@ fun BudgetCalculator(budgetDetails: BudgetDetails, countryCode: String) {
         }
     }
 
-        // Show dialog if isExpanded is true
+    // Show dialog if isExpanded is true
     if (isExpanded) {
         AlertDialog(
             onDismissRequest = { isExpanded = false },
-                title = {
-                    Column(
+            title = {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Divider(color = SkyBlue, thickness = 1.dp)
+                    Box(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalAlignment = Alignment.CenterHorizontally
+                        contentAlignment = Alignment.Center
                     ) {
-                        Divider(color = SkyBlue, thickness = 1.dp)
-                        Box(
-                            modifier = Modifier.fillMaxWidth(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = "Budget Calculator",
-                                fontSize = 28.sp,
-                                fontFamily = PaytoneOne,
-                                color = SkyBlue,
-                            )
-                        }
-                        Divider(color = SkyBlue, thickness = 1.dp)
+                        Text(
+                            text = "Budget Calculator",
+                            fontSize = 28.sp,
+                            fontFamily = PaytoneOne,
+                            color = SkyBlue,
+                        )
                     }
-                },
+                    Divider(color = SkyBlue, thickness = 1.dp)
+                }
+            },
             text = {
                 Column(
                     modifier = Modifier
@@ -1050,7 +1052,7 @@ fun BudgetCalculator(budgetDetails: BudgetDetails, countryCode: String) {
                                 fontFamily = GlacialIndifference,
                                 fontSize = 20.sp,
                                 fontWeight = FontWeight.Bold
-                                )
+                            )
                         }
                     }
 
@@ -1461,7 +1463,8 @@ fun AddTripDialog(
     showDialog: Boolean,
     onDismiss: () -> Unit,
     onSubmit: (Trip) -> Unit,
-    tripViewModel: TripViewModel
+    tripViewModel: TripViewModel,
+    sharedViewModel: SharedViewModel
 ) {
     if (!showDialog) return
 
@@ -1469,6 +1472,7 @@ fun AddTripDialog(
     var startDate by remember { mutableStateOf("") }
     var endDate by remember { mutableStateOf("") }
     var countryCode by remember { mutableStateOf("") }
+    val context = LocalContext.current
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -1482,7 +1486,7 @@ fun AddTripDialog(
                     HorizontalDivider(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(8.dp),
+                            .height(1.dp),
                         color = SunsetOrange
                     )
                     Text(
@@ -1495,7 +1499,7 @@ fun AddTripDialog(
                     HorizontalDivider(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(8.dp, 8.dp, 8.dp, 0.dp),
+                            .height(1.dp),
                         color = SunsetOrange
                     )
                 }
@@ -1619,13 +1623,12 @@ fun AddTripDialog(
                     endDate = endDate,
                     countryCode = countryCode,
                     transportationOptions = emptyList(), // Initialize as empty
-                    budgetDetails = BudgetDetails(
-                        totalBudget = 0.0,
-                        items = emptyList()
-                    ),
+                    budgetDetails = BudgetDetails(0.0, emptyList()),
                     packingChecklist = emptyList()
                 )
                 onSubmit(trip)
+                sharedViewModel.addTrip(trip) // Ensure trip is added to SharedViewModel
+                Toast.makeText(context, "Trip added!", Toast.LENGTH_SHORT).show()
                 onDismiss()
             },
                 colors = ButtonDefaults.buttonColors(containerColor = SunsetOrange) ) {
@@ -1652,14 +1655,6 @@ fun AddTripDialog(
             }
         }
     )
-}
-
-
-@Preview
-@Composable
-fun FlightsScreenPreview() {
-    val tripViewModel = TripViewModel()
-    FlightsScreen(tripViewModel)
 }
 
 @Preview(showBackground = true)
@@ -2027,7 +2022,6 @@ fun ChosenTransportationDialogPreview() {
         )
     }
 }
-
 
 
 

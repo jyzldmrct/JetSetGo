@@ -25,6 +25,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import ph.edu.auf.dimarucut.jayzel.jetsetgo.model.SharedViewModel
 import ph.edu.auf.dimarucut.jayzel.jetsetgo.ui.theme.JetSetGoTheme
 import ph.edu.auf.dimarucut.jayzel.jetsetgo.models.BudgetDetails
 import ph.edu.auf.dimarucut.jayzel.jetsetgo.models.Trip
@@ -45,7 +47,11 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun MainScreen(tripViewModel: TripViewModel) {
+    val sharedViewModel: SharedViewModel = viewModel()
     var selectedItem by remember { mutableStateOf(0) }
+    var showAddTripDialog by remember { mutableStateOf(false) }
+    var destination by remember { mutableStateOf("") }
+    var countryCode by remember { mutableStateOf("") }
     val items = listOf("HOME", "FLIGHTS", "HOTELS", "ACTIVITIES")
     val icons = listOf(
         R.drawable.home_icon,
@@ -53,6 +59,12 @@ fun MainScreen(tripViewModel: TripViewModel) {
         R.drawable.hotel_icon,
         R.drawable.activity_icon
     )
+
+    // Define the onAddTrip function
+    val onAddTrip: (String, String) -> Unit = { dest, code ->
+        destination = dest
+        countryCode = code
+    }
 
     Scaffold(
         bottomBar = {
@@ -107,8 +119,8 @@ fun MainScreen(tripViewModel: TripViewModel) {
         Box(modifier = Modifier.padding(innerPadding)) {
             when (selectedItem) {
                 0 -> HomeScreen()
-                1 -> FlightsScreen(tripViewModel)
-                2 -> HotelsScreen()
+                1 -> FlightsScreen(tripViewModel, sharedViewModel) // Pass sharedViewModel
+                2 -> HotelsScreen(sharedViewModel)
                 3 -> ActivitiesScreen()
             }
         }
@@ -117,9 +129,9 @@ fun MainScreen(tripViewModel: TripViewModel) {
 
 @Composable
 fun TripItem(
-             trip: Trip,
-             onTripSelected: (Trip) -> Unit,
-             modifier: Modifier = Modifier
+    trip: Trip,
+    onTripSelected: (Trip) -> Unit,
+    modifier: Modifier = Modifier
 ){
     var showDialog by remember { mutableStateOf(false) }
 
@@ -173,20 +185,6 @@ fun TripItem(
 
 
 @Composable
-fun HotelsScreen(modifier: Modifier = Modifier) {
-    val hotels = listOf(
-        Hotel("1", "Hotel 1", "Location 1"),
-        Hotel("2", "Hotel 2", "Location 2"),
-        Hotel("3", "Hotel 3", "Location 3")
-    )
-    LazyColumn(modifier = modifier.fillMaxWidth()) {
-        items(hotels) { hotel ->
-            Text(text = "${hotel.name} in ${hotel.location}")
-        }
-    }
-}
-
-@Composable
 fun ActivitiesScreen(modifier: Modifier = Modifier) {
     val activities = listOf(
         Activity("1", "Activity 1", "Description 1"),
@@ -209,14 +207,6 @@ fun DefaultPreview() {
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun PreviewFlightsScreen() {
-    val tripViewModel = TripViewModel()
-    JetSetGoTheme {
-        FlightsScreen(tripViewModel)
-    }
-}
 
 @Preview(showBackground = true)
 @Composable
@@ -239,7 +229,6 @@ fun TripItemPreview() {
         )
     }
 }
-
 
 
 

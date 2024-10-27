@@ -13,6 +13,7 @@ class TripViewModel : ViewModel() {
     val trips: StateFlow<List<Trip>> = _trips
 
 
+
     fun addTrip(trip: Trip) {
         _trips.value = _trips.value + trip
     }
@@ -49,5 +50,4 @@ class TripViewModel : ViewModel() {
         }
     }
 }
-
 

@@ -6,7 +6,6 @@ import java.util.UUID
 
 data class  Main (val id: String, val name: String, val destination: String)
 data class Flight(val id: String, val name: String, val destination: String)
-data class Hotel(val id: String, val name: String, val location: String)
 data class Activity(val id: String, val name: String, val description: String)
 
 data class Trip(
@@ -60,5 +59,30 @@ data class PackingItem(
     val isChecked: Boolean = false
 )
 
+data class HotelResponse(
+    val data: List<HotelData>
+)
 
+data class HotelData(
+    val hotel: Hotel
+)
 
+data class Hotel(
+    val name: String,
+    val address: Address
+)
+
+data class Address(
+    val street: String,
+    val city: String,
+    val country: String
+)
+
+data class Accommodation(
+    val name: String,
+    val address: String,
+    val contactInfo: String,
+    val checkInDate: String,
+    val checkOutDate: String,
+    val reservationNumber: String
+)
