@@ -40,71 +40,69 @@ fun ActivitiesScreen(sharedViewModel: SharedViewModel, modifier: Modifier = Modi
     val tripsState = sharedViewModel.trips.observeAsState(emptyList())
     val trips = tripsState.value
 
-    Column {
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            item {
-                Text(
-                    text = "Explore Your Activities",
-                    style = MaterialTheme.typography.titleLarge,
-                    modifier = Modifier.padding(0.dp, 16.dp, 0.dp, 0.dp),
-                    fontFamily = PaytoneOne,
-                    fontSize = 24.sp,
-                    color = DenimBlue,
-                    textAlign = TextAlign.Center
-                )
-                Text(
-                    text = "Plan and keep track of your exciting adventures and experiences.",
-                    style = MaterialTheme.typography.headlineLarge,
-                    modifier = Modifier.padding(0.dp),
-                    fontFamily = GlacialIndifference,
-                    fontSize = 16.sp,
-                    textAlign = TextAlign.Center,
-                    lineHeight = 24.sp
-                )
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        item {
+            Text(
+                text = "Explore Your Activities",
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier.padding(0.dp, 16.dp, 0.dp, 0.dp),
+                fontFamily = PaytoneOne,
+                fontSize = 24.sp,
+                color = DenimBlue,
+                textAlign = TextAlign.Center
+            )
+            Text(
+                text = "Plan and keep track of your exciting adventures and experiences.",
+                style = MaterialTheme.typography.headlineLarge,
+                modifier = Modifier.padding(0.dp),
+                fontFamily = GlacialIndifference,
+                fontSize = 16.sp,
+                textAlign = TextAlign.Center,
+                lineHeight = 24.sp
+            )
 
-                Box(
+            Box(
+                modifier = Modifier
+                    .width(280.dp)
+                    .height(200.dp)
+                    .padding(vertical = 16.dp)
+                    .background(SkyBlue, shape = RoundedCornerShape(20.dp))
+                    .clip(RoundedCornerShape(20.dp)),
+                contentAlignment = Alignment.Center
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.activitiesimage),
+                    contentDescription = "Your Image",
                     modifier = Modifier
-                        .width(280.dp)
-                        .height(200.dp)
-                        .padding(vertical = 16.dp)
-                        .background(SkyBlue, shape = RoundedCornerShape(20.dp))
-                        .clip(RoundedCornerShape(20.dp)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.activitiesimage),
-                        contentDescription = "Your Image",
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(20.dp))
-                    )
-                }
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(20.dp))
+                )
             }
         }
 
         if (trips.isEmpty()) {
-            Text(
-                text = "No upcoming trips",
-                fontFamily = GlacialIndifference,
-                fontSize = 16.sp,
-                color = DenimBlue,
-                textAlign = TextAlign.Center,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
-            )
+            item {
+                Text(
+                    text = "No upcoming trips",
+                    fontFamily = GlacialIndifference,
+                    fontSize = 16.sp,
+                    color = DenimBlue,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                )
+            }
         } else {
-            LazyColumn {
-                items(trips) { trip ->
-                    ActivityTripItem(trip = trip, onAddActivity = { activity ->
-                        sharedViewModel.addActivityToTrip(trip.id, activity)
-                    })
-                }
+            items(trips) { trip ->
+                ActivityTripItem(trip = trip, onAddActivity = { activity ->
+                    sharedViewModel.addActivityToTrip(trip.id, activity)
+                })
             }
         }
     }
