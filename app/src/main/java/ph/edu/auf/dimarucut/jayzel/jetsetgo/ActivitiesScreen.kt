@@ -39,7 +39,6 @@ import ph.edu.auf.dimarucut.jayzel.jetsetgo.ui.theme.SunsetOrange
 fun ActivitiesScreen(sharedViewModel: SharedViewModel, modifier: Modifier = Modifier) {
     val tripsState = sharedViewModel.trips.observeAsState(emptyList())
     val trips = tripsState.value
-    var activities by remember { mutableStateOf(listOf<Activity>()) }
 
     Column {
         LazyColumn(
@@ -102,13 +101,12 @@ fun ActivitiesScreen(sharedViewModel: SharedViewModel, modifier: Modifier = Modi
         } else {
             LazyColumn {
                 items(trips) { trip ->
-                    ActivityTripItem(trip = trip, activities = activities, onAddActivity = { activity ->
-                        activities = activities + activity
+                    ActivityTripItem(trip = trip, onAddActivity = { activity ->
+                        sharedViewModel.addActivityToTrip(trip.id, activity)
                     })
                 }
             }
         }
-
     }
 }
 
@@ -142,7 +140,7 @@ fun ActivityCard(activity: Activity) {
                 color = Color.White
             )
             Text(
-                text = "${activity.date}",
+                text = "${activity.date} at ${activity.time}",
                 fontFamily = GlacialIndifference,
                 fontWeight = FontWeight.Bold,
                 fontSize = 24.sp,
@@ -173,10 +171,9 @@ fun ActivityCard(activity: Activity) {
 }
 
 @Composable
-fun ActivityTripItem(trip: Trip, activities: List<Activity>, onAddActivity: (Activity) -> Unit) {
+fun ActivityTripItem(trip: Trip, onAddActivity: (Activity) -> Unit) {
     val context = LocalContext.current
     var showAddActivityDialog by remember { mutableStateOf(false) }
-    var showEditActivityDialog by remember { mutableStateOf(false) }
 
     Box(
         modifier = Modifier
@@ -198,7 +195,7 @@ fun ActivityTripItem(trip: Trip, activities: List<Activity>, onAddActivity: (Act
                 modifier = Modifier.fillMaxWidth()
             )
 
-            activities.forEach { activity ->
+            trip.activities.forEach { activity ->
                 ActivityCard(activity = activity)
             }
 
@@ -226,6 +223,7 @@ fun ActivityTripItem(trip: Trip, activities: List<Activity>, onAddActivity: (Act
         }
     }
 
+
     if (showAddActivityDialog) {
         AddActivityDialog(
             showDialog = showAddActivityDialog,
@@ -239,17 +237,13 @@ fun ActivityTripItem(trip: Trip, activities: List<Activity>, onAddActivity: (Act
                     description = description,
                     countryCode = trip.countryCode,
                     destination = trip.destination,
-                    id = "activity-${activities.size + 1}"
+                    id = "activity-${trip.activities.size + 1}"
                 )
                 onAddActivity(newActivity)
                 Toast.makeText(context, "Activity Added: $name", Toast.LENGTH_SHORT).show()
                 showAddActivityDialog = false
             }
         )
-    }
-
-    if (showEditActivityDialog) {
-        // Add your EditActivityDialog composable here
     }
 }
 
@@ -432,7 +426,6 @@ fun AddActivityDialog(
                     onClick = {
                         if (category.isNotBlank() && name.isNotBlank()) {
                             onAddActivity(category, name, date, time, description)
-                            Toast.makeText(context, "Activity added!", Toast.LENGTH_SHORT).show()
                             onDismiss()
                         }
                     },
@@ -468,32 +461,6 @@ fun AddActivityDialog(
 @Composable
 fun ActivitiesScreenPreview() {
     ActivitiesScreen(SharedViewModel())
-}
-
-@Preview(showBackground = true)
-@Composable
-fun ActivityTripItemPreview() {
-    ActivityTripItem(
-        trip = Trip(
-            id = "1",
-            destination = "Paris",
-            countryCode = "FR",
-            startDate = "2024-05-01",
-            endDate = "2024-05-10",
-            budgetDetails = BudgetDetails(totalBudget = 2000.0, items = emptyList()),
-            packingChecklist = listOf(
-                PackingItem(name = "Passport"),
-                PackingItem(name = "Tickets"),
-                PackingItem(name = "Clothes")
-            ),
-            transportationOptions = listOf(
-                TransportationOption(name = "Flight"),
-                TransportationOption(name = "Taxi")
-            )
-        ),
-        activities = listOf(),
-        onAddActivity = { /* Do nothing for preview */ }
-    )
 }
 
 @Preview(showBackground = true)

@@ -3,9 +3,21 @@ package ph.edu.auf.dimarucut.jayzel.jetsetgo.model
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import ph.edu.auf.dimarucut.jayzel.jetsetgo.models.Activity
 import ph.edu.auf.dimarucut.jayzel.jetsetgo.models.Trip
 
 class SharedViewModel : ViewModel() {
+
+    fun addActivityToTrip(tripId: String, activity: Activity) {
+        val updatedTrips = _trips.value?.map { trip ->
+            if (trip.id == tripId) {
+                trip.copy(activities = trip.activities + activity)
+            } else {
+                trip
+            }
+        }
+        _trips.value = updatedTrips
+    }
 
     private val _trips = MutableLiveData<List<Trip>>(emptyList())
     val trips: LiveData<List<Trip>> get() = _trips

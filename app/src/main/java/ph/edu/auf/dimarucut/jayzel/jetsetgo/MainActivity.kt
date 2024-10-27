@@ -119,7 +119,7 @@ fun MainScreen(tripViewModel: TripViewModel) {
         Box(modifier = Modifier.padding(innerPadding)) {
             when (selectedItem) {
                 0 -> HomeScreen()
-                1 -> FlightsScreen(tripViewModel, sharedViewModel) // Pass sharedViewModel
+                1 -> FlightsScreen(tripViewModel, sharedViewModel)
                 2 -> HotelsScreen(sharedViewModel)
                 3 -> ActivitiesScreen(sharedViewModel)
             }

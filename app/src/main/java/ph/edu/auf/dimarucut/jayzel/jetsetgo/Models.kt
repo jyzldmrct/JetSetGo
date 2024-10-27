@@ -16,7 +16,8 @@ data class Trip(
     val transportationOptions: List<TransportationOption>,
     val budgetDetails: BudgetDetails,
     val packingChecklist: List<PackingItem>,
-    val selectedTransportationOption: TransportationOption? = null
+    val selectedTransportationOption: TransportationOption? = null,
+    val activities: List<Activity> = emptyList()
 ) {
     val duration: String
         get() {
