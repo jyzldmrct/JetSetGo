@@ -6,7 +6,6 @@ import java.util.UUID
 
 data class  Main (val id: String, val name: String, val destination: String)
 data class Flight(val id: String, val name: String, val destination: String)
-data class Activity(val id: String, val name: String, val description: String)
 
 data class Trip(
     val id: String,
@@ -85,4 +84,15 @@ data class Accommodation(
     val checkInDate: String,
     val checkOutDate: String,
     val reservationNumber: String
+)
+
+data class Activity(
+    val id: String,
+    val category: String,
+    val name: String,
+    val date: String,
+    val time: String,
+    val description: String,
+    val destination: String,
+    val countryCode: String
 )

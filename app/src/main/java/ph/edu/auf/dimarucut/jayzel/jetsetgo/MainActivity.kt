@@ -121,7 +121,7 @@ fun MainScreen(tripViewModel: TripViewModel) {
                 0 -> HomeScreen()
                 1 -> FlightsScreen(tripViewModel, sharedViewModel) // Pass sharedViewModel
                 2 -> HotelsScreen(sharedViewModel)
-                3 -> ActivitiesScreen()
+                3 -> ActivitiesScreen(sharedViewModel)
             }
         }
     }
@@ -180,21 +180,6 @@ fun TripItem(
                 }
             }
         )
-    }
-}
-
-
-@Composable
-fun ActivitiesScreen(modifier: Modifier = Modifier) {
-    val activities = listOf(
-        Activity("1", "Activity 1", "Description 1"),
-        Activity("2", "Activity 2", "Description 2"),
-        Activity("3", "Activity 3", "Description 3")
-    )
-    LazyColumn(modifier = modifier.fillMaxWidth()) {
-        items(activities) { activity ->
-            Text(text = "${activity.name}: ${activity.description}")
-        }
     }
 }
 

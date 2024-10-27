@@ -418,7 +418,7 @@ fun AccommodationFormDialog(onSubmit: (Accommodation) -> Unit, onCancel: () -> U
                 onCancel()
             },
                 colors = ButtonDefaults.buttonColors(containerColor = SunsetOrange) ) {
-                Text("Submit",
+                Text("Add",
                 fontFamily = PaytoneOne, // Apply custom font
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
