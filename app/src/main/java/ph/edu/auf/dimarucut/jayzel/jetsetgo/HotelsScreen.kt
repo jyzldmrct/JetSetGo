@@ -22,6 +22,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AddCircle
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
@@ -164,6 +166,17 @@ fun TripItem(trip: Trip, onAddAccommodation: (Trip) -> Unit) {
             onCancel = { showForm = false }
         )
     }
+
+    if (showDialog) {
+        selectedAccommodation?.let {
+            AccommodationDetailsDialog(
+                showDialog = showDialog,
+                onDismiss = { showDialog = false },
+                accommodation = it
+            )
+            }
+    }
+
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -407,6 +420,148 @@ fun AccommodationFormDialog(onSubmit: (Accommodation) -> Unit, onCancel: () -> U
     )
 }
 
+@Composable
+fun AccommodationDetailsDialog(
+    showDialog: Boolean,
+    onDismiss: () -> Unit,
+    accommodation: Accommodation
+) {
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = onDismiss,
+                title = {
+                    Box(
+                        modifier = Modifier.fillMaxWidth(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.End
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Edit,
+                                        contentDescription = "Edit Icon",
+                                        modifier = Modifier
+                                            .padding(end = 8.dp)
+                                            .size(20.dp),
+                                        tint = LightDenimBlue
+                                    )
+                                    Icon(
+                                        imageVector = Icons.Default.Clear,
+                                        contentDescription = "Add Icon",
+                                        modifier = Modifier
+                                            .size(20.dp),
+                                        tint = LightDenimBlue
+                                    )
+                                }
+                            HorizontalDivider(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(8.dp),
+                                color = SkyBlue
+                            )
+                            Text(
+                                text = "Accommodation Details",
+                                fontFamily = PaytoneOne,
+                                fontSize = 24.sp,
+                                color = SkyBlue,
+                                textAlign = TextAlign.Center
+                            )
+                            HorizontalDivider(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(8.dp),
+                                color = SkyBlue
+                            )
+                        }
+                    }
+                },
+            text = {
+                Column {
+                    Text("Name:",
+                        fontFamily = GlacialIndifference,
+                        fontSize = 16.sp,
+                        color = LightDenimBlue
+                    )
+
+                    Text("${accommodation.name}",
+                        fontFamily = GlacialIndifference,
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = DenimBlue
+                    )
+
+                    Text("Address:",
+                        fontFamily = GlacialIndifference,
+                        fontSize = 16.sp,
+                        color = LightDenimBlue
+                    )
+
+                    Text("${accommodation.address}",
+                        fontFamily = GlacialIndifference,
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = DenimBlue
+                    )
+
+                    Text("Contact Info:",
+                        fontFamily = GlacialIndifference,
+                        fontSize = 16.sp,
+                        color = LightDenimBlue
+                    )
+
+                    Text("${accommodation.contactInfo}",
+                        fontFamily = GlacialIndifference,
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = DenimBlue
+                    )
+
+                    Text("Check-In Date:",
+                        fontFamily = GlacialIndifference,
+                        fontSize = 16.sp,
+                        color = LightDenimBlue
+                    )
+                    Text("${accommodation.checkInDate}",
+                        fontFamily = GlacialIndifference,
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = DenimBlue
+                    )
+
+                    Text("Check-Out Date:",
+                        fontFamily = GlacialIndifference,
+                        fontSize = 16.sp,
+                        color = LightDenimBlue
+                    )
+
+                    Text(" ${accommodation.checkOutDate}",
+                        fontFamily = GlacialIndifference,
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = DenimBlue
+                    )
+
+                    Text("Reservation Number:",
+                        fontFamily = GlacialIndifference,
+                        fontSize = 16.sp,
+                        color = LightDenimBlue
+                    )
+
+                    Text("${accommodation.reservationNumber}",
+                        fontFamily = GlacialIndifference,
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = DenimBlue
+                    )
+                }
+            },
+            confirmButton = { }
+        )
+    }
+}
+
 
 @Preview(showBackground = true)
 @Composable
@@ -447,4 +602,23 @@ fun AccommodationFormDialogPreview() {
         onCancel = { /* Do nothing for preview */ }
     )
 }
+
+@Preview(showBackground = true)
+@Composable
+fun AccommodationDetailsDialog() {
+    AccommodationDetailsDialog(
+        showDialog = true,
+        onDismiss = { /* Do nothing for preview */ },
+        accommodation = Accommodation(
+            name = "Hotel California",
+            address = "1234 Sunset Blvd",
+            contactInfo = "123-456-7890",
+            checkInDate = "2024-05-01",
+            checkOutDate = "2024-05-10",
+            reservationNumber = "123456"
+        )
+    )
+}
+
+
 
