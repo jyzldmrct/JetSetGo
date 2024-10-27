@@ -3,6 +3,7 @@ package ph.edu.auf.dimarucut.jayzel.jetsetgo
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -22,6 +23,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AddCircle
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Info
@@ -93,10 +95,23 @@ fun HotelsScreen(sharedViewModel: SharedViewModel) {
             }
         }
 
-        LazyColumn {
-            items(trips) { trip ->
-                TripItem(trip = trip, onAddAccommodation = { selectedTrip ->
-                })
+        if (trips.isEmpty()) {
+            Text(
+                text = "No upcoming trips.",
+                fontFamily = GlacialIndifference,
+                fontSize = 16.sp,
+                color = DenimBlue,
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+            )
+        } else {
+            LazyColumn {
+                items(trips) { trip ->
+                    TripItem(trip = trip, onAddAccommodation = { selectedTrip ->
+                    })
+                }
             }
         }
     }
@@ -107,6 +122,8 @@ fun TripItem(trip: Trip, onAddAccommodation: (Trip) -> Unit) {
     var showForm by remember { mutableStateOf(false) }
     var showDialog by remember { mutableStateOf(false) }
     var selectedAccommodation by remember { mutableStateOf<Accommodation?>(null) }
+    var context = LocalContext.current
+
 
     Box(
         modifier = Modifier
@@ -142,9 +159,14 @@ fun TripItem(trip: Trip, onAddAccommodation: (Trip) -> Unit) {
                         tint = Color.White
                     )
                 }
-
                 IconButton(
-                    onClick = { showDialog = true }
+                    onClick = {
+                        if (selectedAccommodation == null) {
+                            Toast.makeText(context, "Add accommodation details first.", Toast.LENGTH_SHORT).show()
+                        } else {
+                            showDialog = true
+                        }
+                    }
                 ) {
                     Icon(
                         imageVector = Icons.Default.Info,
@@ -161,22 +183,22 @@ fun TripItem(trip: Trip, onAddAccommodation: (Trip) -> Unit) {
             onSubmit = { accommodation ->
                 selectedAccommodation = accommodation
                 showForm = false
-                showDialog = true
             },
             onCancel = { showForm = false }
         )
     }
 
-    if (showDialog) {
-        selectedAccommodation?.let {
-            AccommodationDetailsDialog(
-                showDialog = showDialog,
-                onDismiss = { showDialog = false },
-                accommodation = it
-            )
+    if (showDialog && selectedAccommodation != null) {
+        AccommodationDetailsDialog(
+            showDialog = showDialog,
+            onDismiss = { showDialog = false },
+            accommodation = selectedAccommodation!!,
+            onEdit = { updatedAccommodation ->
+                // Handle the updated accommodation here
+                selectedAccommodation = updatedAccommodation
             }
+        )
     }
-
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -424,59 +446,69 @@ fun AccommodationFormDialog(onSubmit: (Accommodation) -> Unit, onCancel: () -> U
 fun AccommodationDetailsDialog(
     showDialog: Boolean,
     onDismiss: () -> Unit,
-    accommodation: Accommodation
+    accommodation: Accommodation,
+    onEdit: (Accommodation) -> Unit
 ) {
+    var showEditDialog by remember { mutableStateOf(false) }
+
     if (showDialog) {
         AlertDialog(
             onDismissRequest = onDismiss,
-                title = {
-                    Box(
-                        modifier = Modifier.fillMaxWidth(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.End
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Edit,
-                                        contentDescription = "Edit Icon",
-                                        modifier = Modifier
-                                            .padding(end = 8.dp)
-                                            .size(20.dp),
-                                        tint = LightDenimBlue
-                                    )
-                                    Icon(
-                                        imageVector = Icons.Default.Clear,
-                                        contentDescription = "Add Icon",
-                                        modifier = Modifier
-                                            .size(20.dp),
-                                        tint = LightDenimBlue
-                                    )
-                                }
-                            HorizontalDivider(
+            title = {
+                Box(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.End
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Edit,
+                                contentDescription = "Info Icon",
                                 modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(8.dp),
-                                color = SkyBlue
+                                    .padding(end = 8.dp)
+                                    .size(20.dp)
+                                    .clickable {
+                                        showEditDialog = true
+                                    },
+                                tint = LightDenimBlue
                             )
-                            Text(
-                                text = "Accommodation Details",
-                                fontFamily = PaytoneOne,
-                                fontSize = 24.sp,
-                                color = SkyBlue,
-                                textAlign = TextAlign.Center
-                            )
-                            HorizontalDivider(
+                            Icon(
+                                imageVector = Icons.Default.Clear,
+                                contentDescription = "Add Icon",
                                 modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(8.dp),
-                                color = SkyBlue
+                                    .padding(start = 8.dp) // Add padding to the start of the second icon
+                                    .size(20.dp)
+                                    .clickable {
+                                        onDismiss()
+                                    },
+                                tint = LightDenimBlue
                             )
                         }
+                        HorizontalDivider(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(8.dp),
+                            color = DenimBlue
+                        )
+                        Text(
+                            text = "Accommodation Details",
+                            fontFamily = PaytoneOne,
+                            fontSize = 24.sp,
+                            color = DenimBlue,
+                            textAlign = TextAlign.Center
+                        )
+                        HorizontalDivider(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(8.dp),
+                            color = DenimBlue
+                        )
                     }
-                },
+                }
+            },
             text = {
                 Column {
                     Text("Name:",
@@ -536,7 +568,7 @@ fun AccommodationDetailsDialog(
                         color = LightDenimBlue
                     )
 
-                    Text(" ${accommodation.checkOutDate}",
+                    Text("${accommodation.checkOutDate}",
                         fontFamily = GlacialIndifference,
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Bold,
@@ -558,6 +590,235 @@ fun AccommodationDetailsDialog(
                 }
             },
             confirmButton = { }
+        )
+    }
+    if (showEditDialog) {
+        EditAccommodationDialog(
+            showDialog = showEditDialog,
+            onDismiss = { showEditDialog = false },
+            accommodation = accommodation,
+            onSubmit = onEdit
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun EditAccommodationDialog(
+    showDialog: Boolean,
+    onDismiss: () -> Unit,
+    accommodation: Accommodation,
+    onSubmit: (Accommodation) -> Unit
+) {
+    var name by remember { mutableStateOf(accommodation.name) }
+    var address by remember { mutableStateOf(accommodation.address) }
+    var contactInfo by remember { mutableStateOf(accommodation.contactInfo) }
+    var checkInDate by remember { mutableStateOf(accommodation.checkInDate) }
+    var checkOutDate by remember { mutableStateOf(accommodation.checkOutDate) }
+    var reservationNumber by remember { mutableStateOf(accommodation.reservationNumber) }
+    var showEditDialog by remember { mutableStateOf(false) } // Define showEditDialog here
+
+    val context = LocalContext.current
+
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = onDismiss,
+                title = {
+                    Box(
+                        modifier = Modifier.fillMaxWidth(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.End
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Clear,
+                                    contentDescription = "Close Icon",
+                                    modifier = Modifier
+                                        .padding(end = 8.dp)
+                                        .size(24.dp)
+                                        .clickable {
+                                            onDismiss()
+                                        },
+                                    tint = LightDenimBlue
+                                )
+                                Icon(
+                                    imageVector = Icons.Default.Check,
+                                    contentDescription = "Save Icon",
+                                    modifier = Modifier
+                                        .size(24.dp)
+                                        .clickable {
+                                            val updatedAccommodation = accommodation.copy(
+                                                name = name,
+                                                address = address,
+                                                contactInfo = contactInfo,
+                                                checkInDate = checkInDate,
+                                                checkOutDate = checkOutDate,
+                                                reservationNumber = reservationNumber
+                                            )
+                                            onSubmit(updatedAccommodation)
+                                            onDismiss()
+                                            Toast.makeText(context, "Accommodation updated!", Toast.LENGTH_SHORT).show()
+                                        },
+                                    tint = SkyBlue
+                                )
+                            }
+                            HorizontalDivider(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(8.dp),
+                                color = SkyBlue
+                            )
+                            Text(
+                                text = "Edit Accommodation",
+                                fontFamily = PaytoneOne,
+                                fontSize = 24.sp,
+                                textAlign = TextAlign.Center,
+                                color = SkyBlue
+                            )
+                            HorizontalDivider(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(8.dp),
+                                color = SkyBlue
+                            )
+                        }
+                    }
+                },
+                text = {
+                    Box(
+                        modifier = Modifier
+                            .width(500.dp)
+                            .wrapContentHeight()
+                    ) {
+                        Column (
+                            modifier = Modifier.background(Color.Transparent)
+                        ) {
+                            TextField(
+                                value = name,
+                                onValueChange = { name = it },
+                                label = { Text("Name") },
+                                textStyle = TextStyle(
+                                    fontFamily = GlacialIndifference,
+                                    fontSize = 24.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = DenimBlue // Text color applied directly here
+                                ),
+                                colors = TextFieldDefaults.textFieldColors(
+                                    containerColor = Color.Transparent,
+                                    focusedIndicatorColor = SkyBlue,
+                                    unfocusedIndicatorColor = LightDenimBlue,
+                                    focusedLabelColor = SkyBlue,
+                                    unfocusedLabelColor = LightDenimBlue,
+                                    cursorColor = DenimBlue
+                                )
+                            )
+                            TextField(
+                                value = address,
+                                onValueChange = { address = it },
+                                label = { Text("Address") },
+                                textStyle = TextStyle(
+                                    fontFamily = GlacialIndifference,
+                                    fontSize = 24.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = DenimBlue // Text color applied directly here
+                                ),
+                                colors = TextFieldDefaults.textFieldColors(
+                                    containerColor = Color.Transparent,
+                                    focusedIndicatorColor = SkyBlue,
+                                    unfocusedIndicatorColor = LightDenimBlue,
+                                    focusedLabelColor = SkyBlue,
+                                    unfocusedLabelColor = LightDenimBlue,
+                                    cursorColor = DenimBlue
+                                )
+                            )
+
+                            TextField(
+                                value = contactInfo,
+                                onValueChange = { contactInfo = it },
+                                label = { Text("Contact Info") },
+                                textStyle = TextStyle(
+                                    fontFamily = GlacialIndifference,
+                                    fontSize = 24.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = DenimBlue // Text color applied directly here
+                                ),
+                                colors = TextFieldDefaults.textFieldColors(
+                                    containerColor = Color.Transparent,
+                                    focusedIndicatorColor = SkyBlue,
+                                    unfocusedIndicatorColor = LightDenimBlue,
+                                    focusedLabelColor = SkyBlue,
+                                    unfocusedLabelColor = LightDenimBlue,
+                                    cursorColor = DenimBlue
+                                )
+                            )
+
+                            TextField(
+                                value = checkInDate,
+                                onValueChange = { checkInDate = it },
+                                label = { Text("Check-In Date") },
+                                textStyle = TextStyle(
+                                    fontFamily = GlacialIndifference,
+                                    fontSize = 24.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = DenimBlue // Text color applied directly here
+                                ),
+                                colors = TextFieldDefaults.textFieldColors(
+                                    containerColor = Color.Transparent,
+                                    focusedIndicatorColor = SkyBlue,
+                                    unfocusedIndicatorColor = LightDenimBlue,
+                                    focusedLabelColor = SkyBlue,
+                                    unfocusedLabelColor = LightDenimBlue,
+                                    cursorColor = DenimBlue
+                                )
+                            )
+
+                            TextField(
+                                value = checkOutDate,
+                                onValueChange = { checkOutDate = it },
+                                label = { Text("Check-Out Date") },
+                                textStyle = TextStyle(
+                                    fontFamily = GlacialIndifference,
+                                    fontSize = 24.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = DenimBlue // Text color applied directly here
+                                ),
+                                colors = TextFieldDefaults.textFieldColors(
+                                    containerColor = Color.Transparent,
+                                    focusedIndicatorColor = SkyBlue,
+                                    unfocusedIndicatorColor = LightDenimBlue,
+                                    focusedLabelColor = SkyBlue,
+                                    unfocusedLabelColor = LightDenimBlue,
+                                    cursorColor = DenimBlue
+                                )
+                            )
+
+                            TextField(
+                                value = reservationNumber,
+                                onValueChange = { reservationNumber = it },
+                                label = { Text("Reservation Number") },
+                                textStyle = TextStyle(
+                                    fontFamily = GlacialIndifference,
+                                    fontSize = 24.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = DenimBlue // Text color applied directly here
+                                ),
+                                colors = TextFieldDefaults.textFieldColors(
+                                    containerColor = Color.Transparent,
+                                    focusedIndicatorColor = SkyBlue,
+                                    unfocusedIndicatorColor = LightDenimBlue,
+                                    focusedLabelColor = SkyBlue,
+                                    unfocusedLabelColor = LightDenimBlue,
+                                    cursorColor = DenimBlue
+                                )
+                            )
+                        }
+                    }
+                },
+                confirmButton = {},
+                dismissButton = {}
         )
     }
 }
@@ -605,7 +866,7 @@ fun AccommodationFormDialogPreview() {
 
 @Preview(showBackground = true)
 @Composable
-fun AccommodationDetailsDialog() {
+fun AccommodationDetailsDialogPreview() {
     AccommodationDetailsDialog(
         showDialog = true,
         onDismiss = { /* Do nothing for preview */ },
@@ -616,9 +877,30 @@ fun AccommodationDetailsDialog() {
             checkInDate = "2024-05-01",
             checkOutDate = "2024-05-10",
             reservationNumber = "123456"
-        )
+        ),
+        onEdit = { /* Do nothing for preview */ }
     )
 }
+
+@Preview(showBackground = true)
+@Composable
+fun EditAccommodationDialogPreview() {
+    EditAccommodationDialog(
+        showDialog = true,
+        onDismiss = { /* Do nothing for preview */ },
+        accommodation = Accommodation(
+            name = "Sample Hotel",
+            address = "123 Sample Street",
+            contactInfo = "123-456-7890",
+            checkInDate = "2024-05-01",
+            checkOutDate = "2024-05-10",
+            reservationNumber = "ABC123"
+        ),
+        onSubmit = { /* Do nothing for preview */ }
+    )
+}
+
+
 
 
 
