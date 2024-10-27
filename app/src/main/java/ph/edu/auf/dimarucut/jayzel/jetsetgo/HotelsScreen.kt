@@ -1,5 +1,6 @@
 package ph.edu.auf.dimarucut.jayzel.jetsetgo
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -23,6 +24,8 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import ph.edu.auf.dimarucut.jayzel.jetsetgo.model.SharedViewModel
 import ph.edu.auf.dimarucut.jayzel.jetsetgo.models.BudgetDetails
@@ -34,6 +37,7 @@ import ph.edu.auf.dimarucut.jayzel.jetsetgo.ui.theme.PaytoneOne
 import ph.edu.auf.dimarucut.jayzel.jetsetgo.ui.theme.SkyBlue
 import ph.edu.auf.dimarucut.jayzel.jetsetgo.models.Accommodation
 import ph.edu.auf.dimarucut.jayzel.jetsetgo.models.TransportationOption
+import ph.edu.auf.dimarucut.jayzel.jetsetgo.ui.theme.LightDenimBlue
 import ph.edu.auf.dimarucut.jayzel.jetsetgo.ui.theme.SunsetOrange
 
 @Composable
@@ -105,7 +109,7 @@ fun TripItem(trip: Trip, onAddAccommodation: (Trip) -> Unit) {
     Box(
         modifier = Modifier
             .padding(8.dp)
-            .background(SkyBlue, shape = RoundedCornerShape(30.dp))
+            .background(SkyBlue, shape = RoundedCornerShape(25.dp))
             .wrapContentSize()
             .padding(16.dp)
     ) {
@@ -162,6 +166,7 @@ fun TripItem(trip: Trip, onAddAccommodation: (Trip) -> Unit) {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AccommodationFormDialog(onSubmit: (Accommodation) -> Unit, onCancel: () -> Unit) {
     var name by remember { mutableStateOf("") }
@@ -170,46 +175,196 @@ fun AccommodationFormDialog(onSubmit: (Accommodation) -> Unit, onCancel: () -> U
     var checkInDate by remember { mutableStateOf("") }
     var checkOutDate by remember { mutableStateOf("") }
     var reservationNumber by remember { mutableStateOf("") }
+    val context = LocalContext.current
 
     AlertDialog(
         onDismissRequest = onCancel,
-        title = { Text(text = "Add Accommodation") },
+        containerColor = Color.White,
+        title = {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color.White),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.padding(0.dp)) {
+                    HorizontalDivider(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp)
+                            .height(1.dp),
+                        color = SunsetOrange
+                    )
+                    Text(
+                        "Add Accommodation",
+                        fontFamily = PaytoneOne,
+                        fontSize = 28.sp,
+                        textAlign = TextAlign.Center,
+                        color = SunsetOrange
+                    )
+                    HorizontalDivider(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp)
+                            .height(1.dp),
+                        color = SunsetOrange
+                    )
+                }
+            }
+        },
         text = {
             Column(
                 modifier = Modifier
-                    .padding(16.dp)
                     .background(Color.White, shape = RoundedCornerShape(8.dp))
-                    .padding(16.dp)
+                    .padding(0.dp),
             ) {
                 TextField(
                     value = name,
                     onValueChange = { name = it },
-                    label = { Text("Name") }
+                    label = {
+                        Text("Name",
+                            fontFamily = GlacialIndifference,
+                            fontSize = 16.sp,
+                            modifier = Modifier.padding(top = 0.dp)
+                        )
+                    },
+                    shape = RoundedCornerShape(8.dp),
+                    colors = TextFieldDefaults.textFieldColors(
+                        containerColor = Color.Transparent,
+                        focusedIndicatorColor = SunsetOrange,
+                        unfocusedIndicatorColor = LightDenimBlue,
+                        focusedLabelColor = SunsetOrange,
+                        unfocusedLabelColor = LightDenimBlue,
+                        cursorColor = DenimBlue
+                    ),
+                    textStyle = TextStyle(
+                        fontFamily = GlacialIndifference,
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = DenimBlue
+                    )
                 )
                 TextField(
                     value = address,
                     onValueChange = { address = it },
-                    label = { Text("Address") }
+                    label = {
+                        Text("Address",
+                            fontFamily = GlacialIndifference,
+                            fontSize = 16.sp
+                            )
+                    },
+                    shape = RoundedCornerShape(8.dp),
+                    colors = TextFieldDefaults.textFieldColors(
+                        containerColor = Color.Transparent,
+                        focusedIndicatorColor = SunsetOrange,
+                        unfocusedIndicatorColor = LightDenimBlue,
+                        focusedLabelColor = SunsetOrange,
+                        unfocusedLabelColor = LightDenimBlue,
+                        cursorColor = DenimBlue
+                    ),
+                    textStyle = TextStyle(
+                        fontFamily = GlacialIndifference,
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = DenimBlue
+                    )
                 )
                 TextField(
                     value = contactInfo,
                     onValueChange = { contactInfo = it },
-                    label = { Text("Contact Info") }
+                    label = { Text("Contact Info",
+                        fontFamily = GlacialIndifference,
+                        fontSize = 16.sp
+                    )
+                    },
+                    shape = RoundedCornerShape(8.dp),
+                    colors = TextFieldDefaults.textFieldColors(
+                        containerColor = Color.Transparent,
+                        focusedIndicatorColor = SunsetOrange,
+                        unfocusedIndicatorColor = LightDenimBlue,
+                        focusedLabelColor = SunsetOrange,
+                        unfocusedLabelColor = LightDenimBlue,
+                        cursorColor = DenimBlue
+                    ),
+                    textStyle = TextStyle(
+                        fontFamily = GlacialIndifference,
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = DenimBlue
+                    )
                 )
                 TextField(
                     value = checkInDate,
                     onValueChange = { checkInDate = it },
-                    label = { Text("Check-In Date") }
+                    label = { Text("Check-In Date",
+                            fontFamily = GlacialIndifference,
+                        fontSize = 16.sp
+                    )
+                    },
+                    shape = RoundedCornerShape(8.dp),
+                    colors = TextFieldDefaults.textFieldColors(
+                        containerColor = Color.Transparent,
+                        focusedIndicatorColor = SunsetOrange,
+                        unfocusedIndicatorColor = LightDenimBlue,
+                        focusedLabelColor = SunsetOrange,
+                        unfocusedLabelColor = LightDenimBlue,
+                        cursorColor = DenimBlue
+                    ),
+                    textStyle = TextStyle(
+                        fontFamily = GlacialIndifference,
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = DenimBlue
+                    )
                 )
                 TextField(
                     value = checkOutDate,
                     onValueChange = { checkOutDate = it },
-                    label = { Text("Check-Out Date") }
+                    label = { Text("Check-Out Date",
+                            fontFamily = GlacialIndifference,
+                        fontSize = 16.sp
+                    )
+                    },
+                    shape = RoundedCornerShape(8.dp),
+                    colors = TextFieldDefaults.textFieldColors(
+                        containerColor = Color.Transparent,
+                        focusedIndicatorColor = SunsetOrange,
+                        unfocusedIndicatorColor = LightDenimBlue,
+                        focusedLabelColor = SunsetOrange,
+                        unfocusedLabelColor = LightDenimBlue,
+                        cursorColor = DenimBlue
+                    ),
+                    textStyle = TextStyle(
+                        fontFamily = GlacialIndifference,
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = DenimBlue
+                    )
                 )
                 TextField(
                     value = reservationNumber,
                     onValueChange = { reservationNumber = it },
-                    label = { Text("Reservation Number") }
+                    label = { Text("Reservation Number",
+                        fontFamily = GlacialIndifference,
+                        fontSize = 16.sp
+                    )
+                    },
+                    shape = RoundedCornerShape(8.dp),
+                    colors = TextFieldDefaults.textFieldColors(
+                        containerColor = Color.Transparent,
+                        focusedIndicatorColor = SunsetOrange,
+                        unfocusedIndicatorColor = LightDenimBlue,
+                        focusedLabelColor = SunsetOrange,
+                        unfocusedLabelColor = LightDenimBlue,
+                        cursorColor = DenimBlue
+                    ),
+                    textStyle = TextStyle(
+                        fontFamily = GlacialIndifference,
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = DenimBlue
+                    )
                 )
             }
         },
@@ -224,13 +379,29 @@ fun AccommodationFormDialog(onSubmit: (Accommodation) -> Unit, onCancel: () -> U
                     reservationNumber = reservationNumber
                 )
                 onSubmit(accommodation)
-            }) {
-                Text("Submit")
+                Toast.makeText(context, "Accommodation added!", Toast.LENGTH_SHORT).show()
+                onCancel()
+            },
+                colors = ButtonDefaults.buttonColors(containerColor = SunsetOrange) ) {
+                Text("Submit",
+                fontFamily = PaytoneOne, // Apply custom font
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.White
+                )
             }
         },
+
         dismissButton = {
-            Button(onClick = onCancel) {
-                Text("Cancel")
+            Button(onClick = onCancel,
+                colors = ButtonDefaults.buttonColors(containerColor = LightDenimBlue) ) {
+                Text(
+                    "Cancel",
+                    fontFamily = PaytoneOne,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
             }
         }
     )
