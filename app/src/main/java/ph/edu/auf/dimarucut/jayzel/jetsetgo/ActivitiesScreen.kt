@@ -3,14 +3,10 @@ package ph.edu.auf.dimarucut.jayzel.jetsetgo
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
@@ -27,6 +23,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import ph.edu.auf.dimarucut.jayzel.jetsetgo.model.SharedViewModel
+import ph.edu.auf.dimarucut.jayzel.jetsetgo.models.Activity
 import ph.edu.auf.dimarucut.jayzel.jetsetgo.models.BudgetDetails
 import ph.edu.auf.dimarucut.jayzel.jetsetgo.models.PackingItem
 import ph.edu.auf.dimarucut.jayzel.jetsetgo.models.TransportationOption
@@ -42,6 +39,7 @@ import ph.edu.auf.dimarucut.jayzel.jetsetgo.ui.theme.SunsetOrange
 fun ActivitiesScreen(sharedViewModel: SharedViewModel, modifier: Modifier = Modifier) {
     val tripsState = sharedViewModel.trips.observeAsState(emptyList())
     val trips = tripsState.value
+    var activities by remember { mutableStateOf(listOf<Activity>()) }
 
     Column {
         LazyColumn(
@@ -104,17 +102,78 @@ fun ActivitiesScreen(sharedViewModel: SharedViewModel, modifier: Modifier = Modi
         } else {
             LazyColumn {
                 items(trips) { trip ->
-                    ActivityTripItem(trip = trip, onAddAccommodation = { selectedTrip ->
-                        // Handle add accommodation action
+                    ActivityTripItem(trip = trip, activities = activities, onAddActivity = { activity ->
+                        activities = activities + activity
                     })
                 }
             }
+        }
+
+    }
+}
+
+@Composable
+fun ActivityCard(activity: Activity) {
+    Card(
+        modifier = Modifier
+            .padding(8.dp)
+            .fillMaxWidth(),
+        shape = RoundedCornerShape(8.dp),
+        colors = CardDefaults.cardColors(containerColor = LightDenimBlue)
+    ) {
+        Column(
+            modifier = Modifier.padding(8.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.Start
+        ) {
+
+            Text(
+                text = "${activity.category}",
+                fontFamily = GlacialIndifference,
+                fontWeight = FontWeight.Bold,
+                fontSize = 24.sp,
+                color = Color.White
+            )
+            Text(
+                text = "${activity.name}",
+                fontFamily = GlacialIndifference,
+                fontWeight = FontWeight.Bold,
+                fontSize = 24.sp,
+                color = Color.White
+            )
+            Text(
+                text = "${activity.date}",
+                fontFamily = GlacialIndifference,
+                fontWeight = FontWeight.Bold,
+                fontSize = 24.sp,
+                color = Color.White
+            )
+            Text(
+                text = "${activity.time}",
+                fontFamily = GlacialIndifference,
+                fontWeight = FontWeight.Bold,
+                fontSize = 24.sp,
+                color = Color.White
+            )
+            Text(
+                text = "Description:",
+                fontFamily = GlacialIndifference,
+                fontSize = 24.sp,
+                color = Color.White
+            )
+            Text(
+                text = "${activity.description}",
+                fontFamily = GlacialIndifference,
+                fontWeight = FontWeight.Bold,
+                fontSize = 24.sp,
+                color = Color.White
+            )
         }
     }
 }
 
 @Composable
-fun ActivityTripItem(trip: Trip, onAddAccommodation: (Trip) -> Unit) {
+fun ActivityTripItem(trip: Trip, activities: List<Activity>, onAddActivity: (Activity) -> Unit) {
     val context = LocalContext.current
     var showAddActivityDialog by remember { mutableStateOf(false) }
     var showEditActivityDialog by remember { mutableStateOf(false) }
@@ -138,6 +197,11 @@ fun ActivityTripItem(trip: Trip, onAddAccommodation: (Trip) -> Unit) {
                 textAlign = TextAlign.Start,
                 modifier = Modifier.fillMaxWidth()
             )
+
+            activities.forEach { activity ->
+                ActivityCard(activity = activity)
+            }
+
             Button(
                 onClick = { showAddActivityDialog = true },
                 shape = RoundedCornerShape(30.dp),
@@ -167,8 +231,19 @@ fun ActivityTripItem(trip: Trip, onAddAccommodation: (Trip) -> Unit) {
             showDialog = showAddActivityDialog,
             onDismiss = { showAddActivityDialog = false },
             onAddActivity = { category, name, date, time, description ->
-                // Handle the added activity here
+                val newActivity = Activity(
+                    category = category,
+                    name = name,
+                    date = date,
+                    time = time,
+                    description = description,
+                    countryCode = trip.countryCode,
+                    destination = trip.destination,
+                    id = "activity-${activities.size + 1}"
+                )
+                onAddActivity(newActivity)
                 Toast.makeText(context, "Activity Added: $name", Toast.LENGTH_SHORT).show()
+                showAddActivityDialog = false
             }
         )
     }
@@ -210,7 +285,7 @@ fun AddActivityDialog(
                             color = SunsetOrange
                         )
                         Text(
-                            "Add Activity",
+                            "Add New Activity",
                             fontFamily = PaytoneOne,
                             fontSize = 28.sp,
                             textAlign = TextAlign.Center,
@@ -232,7 +307,7 @@ fun AddActivityDialog(
                         value = category,
                         onValueChange = { category = it },
                         label = { Text("Category",
-                                fontFamily = GlacialIndifference,
+                            fontFamily = GlacialIndifference,
                             fontSize = 16.sp,
                             modifier = Modifier.padding(top = 0.dp)
                         )
@@ -277,7 +352,6 @@ fun AddActivityDialog(
                             color = DenimBlue
                         )
                     )
-
                     TextField(
                         value = date,
                         onValueChange = { date = it },
@@ -327,7 +401,6 @@ fun AddActivityDialog(
                             color = DenimBlue
                         )
                     )
-
                     TextField(
                         value = description,
                         onValueChange = { description = it },
@@ -355,15 +428,21 @@ fun AddActivityDialog(
                 }
             },
             confirmButton = {
-                Button(
+                TextButton(
                     onClick = {
-                        onAddActivity(category, name, date, time, description)
-                        Toast.makeText(context, "Activity added!", Toast.LENGTH_SHORT).show()
-                        onDismiss()
+                        if (category.isNotBlank() && name.isNotBlank()) {
+                            onAddActivity(category, name, date, time, description)
+                            Toast.makeText(context, "Activity added!", Toast.LENGTH_SHORT).show()
+                            onDismiss()
+                        }
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = SunsetOrange) ) {
-                    Text("Submit",
-                        fontFamily = PaytoneOne, // Apply custom font
+                    colors = ButtonDefaults.buttonColors(
+                        contentColor = Color.White,
+                        containerColor = SunsetOrange
+                    )
+                ) {
+                    Text("Add Activity",
+                        fontFamily = PaytoneOne,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.White
@@ -371,10 +450,9 @@ fun AddActivityDialog(
                 }
             },
             dismissButton = {
-                Button(onClick = onDismiss,
+                TextButton(onClick = onDismiss,
                     colors = ButtonDefaults.buttonColors(containerColor = LightDenimBlue) ) {
-                    Text(
-                        "Cancel",
+                    Text("Cancel",
                         fontFamily = PaytoneOne,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
@@ -389,14 +467,19 @@ fun AddActivityDialog(
 @Preview(showBackground = true)
 @Composable
 fun ActivitiesScreenPreview() {
-    val sharedViewModel = remember { SharedViewModel() }
-    sharedViewModel.addTrip(
-        Trip(
+    ActivitiesScreen(SharedViewModel())
+}
+
+@Preview(showBackground = true)
+@Composable
+fun ActivityTripItemPreview() {
+    ActivityTripItem(
+        trip = Trip(
             id = "1",
-            destination = "Boracay",
-            startDate = "2022-12-01",
-            endDate = "2022-12-05",
-            countryCode = "PH",
+            destination = "Paris",
+            countryCode = "FR",
+            startDate = "2024-05-01",
+            endDate = "2024-05-10",
             budgetDetails = BudgetDetails(totalBudget = 2000.0, items = emptyList()),
             packingChecklist = listOf(
                 PackingItem(name = "Passport"),
@@ -407,9 +490,10 @@ fun ActivitiesScreenPreview() {
                 TransportationOption(name = "Flight"),
                 TransportationOption(name = "Taxi")
             )
-        )
+        ),
+        activities = listOf(),
+        onAddActivity = { /* Do nothing for preview */ }
     )
-    ActivitiesScreen(sharedViewModel = sharedViewModel)
 }
 
 @Preview(showBackground = true)
@@ -417,9 +501,24 @@ fun ActivitiesScreenPreview() {
 fun AddActivityDialogPreview() {
     AddActivityDialog(
         showDialog = true,
-        onDismiss = {},
-        onAddActivity = { category, name, date, time, description ->
-            // Handle the added activity here
-        }
+        onDismiss = { /* Do nothing for preview */ },
+        onAddActivity = { _, _, _, _, _ -> /* Do nothing for preview */ }
+    )
+}
+
+@Preview(showBackground = true)
+@Composable
+fun ActivityCardPreview() {
+    ActivityCard(
+        activity = Activity(
+            id = "1",
+            category = "Adventure",
+            name = "Hiking",
+            date = "2024-05-01",
+            time = "08:00",
+            description = "Hike up the mountain",
+            countryCode = "FR",
+            destination = "Paris"
+        )
     )
 }
