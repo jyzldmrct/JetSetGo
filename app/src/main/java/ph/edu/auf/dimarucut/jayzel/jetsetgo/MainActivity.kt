@@ -23,6 +23,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -30,7 +31,7 @@ import ph.edu.auf.dimarucut.jayzel.jetsetgo.model.SharedViewModel
 import ph.edu.auf.dimarucut.jayzel.jetsetgo.ui.theme.JetSetGoTheme
 import ph.edu.auf.dimarucut.jayzel.jetsetgo.models.BudgetDetails
 import ph.edu.auf.dimarucut.jayzel.jetsetgo.models.Trip
-
+import ph.edu.auf.dimarucut.jayzel.jetsetgo.util.SharedPreferencesUtil
 
 class MainActivity : ComponentActivity() {
 
@@ -39,7 +40,6 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-
             MainScreen(tripViewModel = tripViewModel)
         }
     }
@@ -60,11 +60,15 @@ fun MainScreen(tripViewModel: TripViewModel) {
         R.drawable.activity_icon
     )
 
-    // Define the onAddTrip function
-    val onAddTrip: (String, String) -> Unit = { dest, code ->
+     val onAddTrip: (String, String) -> Unit = { dest, code ->
         destination = dest
         countryCode = code
     }
+
+    val context = LocalContext.current
+
+    selectedItem = SharedPreferencesUtil.getString(context, "last_selected_item")?.toInt() ?: 0
+
 
     Scaffold(
         bottomBar = {
@@ -101,7 +105,11 @@ fun MainScreen(tripViewModel: TripViewModel) {
                             }
                         },
                         selected = selectedItem == index,
-                        onClick = { selectedItem = index },
+                        onClick = {
+                            selectedItem = index
+                            // Save the selected item to SharedPreferences
+                            SharedPreferencesUtil.saveString(context, "last_selected_item", index.toString())
+                        },
                         colors = NavigationBarItemDefaults.colors(
                             selectedIconColor = Color.White,
                             unselectedIconColor = Color.LightGray,

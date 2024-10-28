@@ -19,7 +19,6 @@ class TripViewModel : ViewModel() {
     }
 
     fun addTransportationOption(tripId: String, transportationOption: TransportationOption) {
-        // Find the trip by ID and add the transportation option
         _trips.value = _trips.value.map { trip ->
             if (trip.id == tripId) {
                 trip.copy(transportationOptions = trip.transportationOptions + transportationOption)
@@ -50,4 +49,3 @@ class TripViewModel : ViewModel() {
         }
     }
 }
-

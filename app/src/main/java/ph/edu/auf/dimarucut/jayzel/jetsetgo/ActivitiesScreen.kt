@@ -1,5 +1,6 @@
 package ph.edu.auf.dimarucut.jayzel.jetsetgo
 
+import android.content.Context
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -24,21 +25,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import ph.edu.auf.dimarucut.jayzel.jetsetgo.model.SharedViewModel
 import ph.edu.auf.dimarucut.jayzel.jetsetgo.models.Activity
-import ph.edu.auf.dimarucut.jayzel.jetsetgo.models.BudgetDetails
-import ph.edu.auf.dimarucut.jayzel.jetsetgo.models.PackingItem
-import ph.edu.auf.dimarucut.jayzel.jetsetgo.models.TransportationOption
 import ph.edu.auf.dimarucut.jayzel.jetsetgo.models.Trip
-import ph.edu.auf.dimarucut.jayzel.jetsetgo.ui.theme.DenimBlue
-import ph.edu.auf.dimarucut.jayzel.jetsetgo.ui.theme.GlacialIndifference
-import ph.edu.auf.dimarucut.jayzel.jetsetgo.ui.theme.LightDenimBlue
-import ph.edu.auf.dimarucut.jayzel.jetsetgo.ui.theme.PaytoneOne
-import ph.edu.auf.dimarucut.jayzel.jetsetgo.ui.theme.SkyBlue
-import ph.edu.auf.dimarucut.jayzel.jetsetgo.ui.theme.SunsetOrange
+import ph.edu.auf.dimarucut.jayzel.jetsetgo.ui.theme.*
+import ph.edu.auf.dimarucut.jayzel.jetsetgo.util.SharedPreferencesUtil
 
 @Composable
 fun ActivitiesScreen(sharedViewModel: SharedViewModel, modifier: Modifier = Modifier) {
     val tripsState = sharedViewModel.trips.observeAsState(emptyList())
     val trips = tripsState.value
+    val context = LocalContext.current
 
     LazyColumn(
         modifier = Modifier
@@ -122,16 +117,15 @@ fun ActivityCard(activity: Activity) {
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.Start
         ) {
-
             Text(
-                text = "${activity.category}",
+                text = activity.category,
                 fontFamily = GlacialIndifference,
                 fontWeight = FontWeight.Bold,
                 fontSize = 24.sp,
                 color = Color.White
             )
             Text(
-                text = "${activity.name}",
+                text = activity.name,
                 fontFamily = GlacialIndifference,
                 fontWeight = FontWeight.Bold,
                 fontSize = 24.sp,
@@ -145,20 +139,13 @@ fun ActivityCard(activity: Activity) {
                 color = Color.White
             )
             Text(
-                text = "${activity.time}",
-                fontFamily = GlacialIndifference,
-                fontWeight = FontWeight.Bold,
-                fontSize = 24.sp,
-                color = Color.White
-            )
-            Text(
                 text = "Description:",
                 fontFamily = GlacialIndifference,
                 fontSize = 24.sp,
                 color = Color.White
             )
             Text(
-                text = "${activity.description}",
+                text = activity.description,
                 fontFamily = GlacialIndifference,
                 fontWeight = FontWeight.Bold,
                 fontSize = 24.sp,
@@ -220,7 +207,6 @@ fun ActivityTripItem(trip: Trip, onAddActivity: (Activity) -> Unit) {
             }
         }
     }
-
 
     if (showAddActivityDialog) {
         AddActivityDialog(
@@ -421,12 +407,17 @@ fun AddActivityDialog(
             },
             confirmButton = {
                 TextButton(
-                    onClick = {
-                        if (category.isNotBlank() && name.isNotBlank()) {
-                            onAddActivity(category, name, date, time, description)
-                            onDismiss()
-                        }
-                    },
+                        onClick = {
+                            if (category.isNotBlank() && name.isNotBlank()) {
+                                onAddActivity(category, name, date, time, description)
+
+                                // Save activity data to SharedPreferences
+                                val activityData = "$category|$name|$date|$time|$description"
+                                SharedPreferencesUtil.saveString(context, "activity_$name", activityData)
+
+                                onDismiss()
+                            }
+                        },
                     colors = ButtonDefaults.buttonColors(
                         contentColor = Color.White,
                         containerColor = SunsetOrange

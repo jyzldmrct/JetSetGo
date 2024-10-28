@@ -287,7 +287,7 @@ fun AccommodationFormDialog(onSubmit: (Accommodation) -> Unit, onCancel: () -> U
                         Text("Address",
                             fontFamily = GlacialIndifference,
                             fontSize = 16.sp
-                            )
+                        )
                     },
                     shape = RoundedCornerShape(8.dp),
                     colors = TextFieldDefaults.textFieldColors(
@@ -333,7 +333,7 @@ fun AccommodationFormDialog(onSubmit: (Accommodation) -> Unit, onCancel: () -> U
                     value = checkInDate,
                     onValueChange = { checkInDate = it },
                     label = { Text("Check-In Date",
-                            fontFamily = GlacialIndifference,
+                        fontFamily = GlacialIndifference,
                         fontSize = 16.sp
                     )
                     },
@@ -357,7 +357,7 @@ fun AccommodationFormDialog(onSubmit: (Accommodation) -> Unit, onCancel: () -> U
                     value = checkOutDate,
                     onValueChange = { checkOutDate = it },
                     label = { Text("Check-Out Date",
-                            fontFamily = GlacialIndifference,
+                        fontFamily = GlacialIndifference,
                         fontSize = 16.sp
                     )
                     },
@@ -419,10 +419,10 @@ fun AccommodationFormDialog(onSubmit: (Accommodation) -> Unit, onCancel: () -> U
             },
                 colors = ButtonDefaults.buttonColors(containerColor = SunsetOrange) ) {
                 Text("Add",
-                fontFamily = PaytoneOne, // Apply custom font
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.White
+                    fontFamily = PaytoneOne, // Apply custom font
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
                 )
             }
         },
@@ -623,202 +623,202 @@ fun EditAccommodationDialog(
     if (showDialog) {
         AlertDialog(
             onDismissRequest = onDismiss,
-                title = {
-                    Box(
-                        modifier = Modifier.fillMaxWidth(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.End
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Clear,
-                                    contentDescription = "Close Icon",
-                                    modifier = Modifier
-                                        .padding(end = 8.dp)
-                                        .size(24.dp)
-                                        .clickable {
-                                            onDismiss()
-                                        },
-                                    tint = LightDenimBlue
-                                )
-                                Icon(
-                                    imageVector = Icons.Default.Check,
-                                    contentDescription = "Save Icon",
-                                    modifier = Modifier
-                                        .size(24.dp)
-                                        .clickable {
-                                            val updatedAccommodation = accommodation.copy(
-                                                name = name,
-                                                address = address,
-                                                contactInfo = contactInfo,
-                                                checkInDate = checkInDate,
-                                                checkOutDate = checkOutDate,
-                                                reservationNumber = reservationNumber
-                                            )
-                                            onSubmit(updatedAccommodation)
-                                            onDismiss()
-                                            Toast.makeText(context, "Accommodation updated!", Toast.LENGTH_SHORT).show()
-                                        },
-                                    tint = SkyBlue
-                                )
-                            }
-                            HorizontalDivider(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(8.dp),
-                                color = SkyBlue
-                            )
-                            Text(
-                                text = "Edit Accommodation",
-                                fontFamily = PaytoneOne,
-                                fontSize = 24.sp,
-                                textAlign = TextAlign.Center,
-                                color = SkyBlue
-                            )
-                            HorizontalDivider(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(8.dp),
-                                color = SkyBlue
-                            )
-                        }
-                    }
-                },
-                text = {
-                    Box(
-                        modifier = Modifier
-                            .width(500.dp)
-                            .wrapContentHeight()
-                    ) {
-                        Column (
-                            modifier = Modifier.background(Color.Transparent)
+            title = {
+                Box(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.End
                         ) {
-                            TextField(
-                                value = name,
-                                onValueChange = { name = it },
-                                label = { Text("Name") },
-                                textStyle = TextStyle(
-                                    fontFamily = GlacialIndifference,
-                                    fontSize = 24.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = DenimBlue // Text color applied directly here
-                                ),
-                                colors = TextFieldDefaults.textFieldColors(
-                                    containerColor = Color.Transparent,
-                                    focusedIndicatorColor = SkyBlue,
-                                    unfocusedIndicatorColor = LightDenimBlue,
-                                    focusedLabelColor = SkyBlue,
-                                    unfocusedLabelColor = LightDenimBlue,
-                                    cursorColor = DenimBlue
-                                )
+                            Icon(
+                                imageVector = Icons.Default.Clear,
+                                contentDescription = "Close Icon",
+                                modifier = Modifier
+                                    .padding(end = 8.dp)
+                                    .size(24.dp)
+                                    .clickable {
+                                        onDismiss()
+                                    },
+                                tint = LightDenimBlue
                             )
-                            TextField(
-                                value = address,
-                                onValueChange = { address = it },
-                                label = { Text("Address") },
-                                textStyle = TextStyle(
-                                    fontFamily = GlacialIndifference,
-                                    fontSize = 24.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = DenimBlue // Text color applied directly here
-                                ),
-                                colors = TextFieldDefaults.textFieldColors(
-                                    containerColor = Color.Transparent,
-                                    focusedIndicatorColor = SkyBlue,
-                                    unfocusedIndicatorColor = LightDenimBlue,
-                                    focusedLabelColor = SkyBlue,
-                                    unfocusedLabelColor = LightDenimBlue,
-                                    cursorColor = DenimBlue
-                                )
-                            )
-
-                            TextField(
-                                value = contactInfo,
-                                onValueChange = { contactInfo = it },
-                                label = { Text("Contact Info") },
-                                textStyle = TextStyle(
-                                    fontFamily = GlacialIndifference,
-                                    fontSize = 24.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = DenimBlue // Text color applied directly here
-                                ),
-                                colors = TextFieldDefaults.textFieldColors(
-                                    containerColor = Color.Transparent,
-                                    focusedIndicatorColor = SkyBlue,
-                                    unfocusedIndicatorColor = LightDenimBlue,
-                                    focusedLabelColor = SkyBlue,
-                                    unfocusedLabelColor = LightDenimBlue,
-                                    cursorColor = DenimBlue
-                                )
-                            )
-
-                            TextField(
-                                value = checkInDate,
-                                onValueChange = { checkInDate = it },
-                                label = { Text("Check-In Date") },
-                                textStyle = TextStyle(
-                                    fontFamily = GlacialIndifference,
-                                    fontSize = 24.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = DenimBlue // Text color applied directly here
-                                ),
-                                colors = TextFieldDefaults.textFieldColors(
-                                    containerColor = Color.Transparent,
-                                    focusedIndicatorColor = SkyBlue,
-                                    unfocusedIndicatorColor = LightDenimBlue,
-                                    focusedLabelColor = SkyBlue,
-                                    unfocusedLabelColor = LightDenimBlue,
-                                    cursorColor = DenimBlue
-                                )
-                            )
-
-                            TextField(
-                                value = checkOutDate,
-                                onValueChange = { checkOutDate = it },
-                                label = { Text("Check-Out Date") },
-                                textStyle = TextStyle(
-                                    fontFamily = GlacialIndifference,
-                                    fontSize = 24.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = DenimBlue // Text color applied directly here
-                                ),
-                                colors = TextFieldDefaults.textFieldColors(
-                                    containerColor = Color.Transparent,
-                                    focusedIndicatorColor = SkyBlue,
-                                    unfocusedIndicatorColor = LightDenimBlue,
-                                    focusedLabelColor = SkyBlue,
-                                    unfocusedLabelColor = LightDenimBlue,
-                                    cursorColor = DenimBlue
-                                )
-                            )
-
-                            TextField(
-                                value = reservationNumber,
-                                onValueChange = { reservationNumber = it },
-                                label = { Text("Reservation Number") },
-                                textStyle = TextStyle(
-                                    fontFamily = GlacialIndifference,
-                                    fontSize = 24.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = DenimBlue // Text color applied directly here
-                                ),
-                                colors = TextFieldDefaults.textFieldColors(
-                                    containerColor = Color.Transparent,
-                                    focusedIndicatorColor = SkyBlue,
-                                    unfocusedIndicatorColor = LightDenimBlue,
-                                    focusedLabelColor = SkyBlue,
-                                    unfocusedLabelColor = LightDenimBlue,
-                                    cursorColor = DenimBlue
-                                )
+                            Icon(
+                                imageVector = Icons.Default.Check,
+                                contentDescription = "Save Icon",
+                                modifier = Modifier
+                                    .size(24.dp)
+                                    .clickable {
+                                        val updatedAccommodation = accommodation.copy(
+                                            name = name,
+                                            address = address,
+                                            contactInfo = contactInfo,
+                                            checkInDate = checkInDate,
+                                            checkOutDate = checkOutDate,
+                                            reservationNumber = reservationNumber
+                                        )
+                                        onSubmit(updatedAccommodation)
+                                        onDismiss()
+                                        Toast.makeText(context, "Accommodation updated!", Toast.LENGTH_SHORT).show()
+                                    },
+                                tint = SkyBlue
                             )
                         }
+                        HorizontalDivider(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(8.dp),
+                            color = SkyBlue
+                        )
+                        Text(
+                            text = "Edit Accommodation",
+                            fontFamily = PaytoneOne,
+                            fontSize = 24.sp,
+                            textAlign = TextAlign.Center,
+                            color = SkyBlue
+                        )
+                        HorizontalDivider(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(8.dp),
+                            color = SkyBlue
+                        )
                     }
-                },
-                confirmButton = {},
-                dismissButton = {}
+                }
+            },
+            text = {
+                Box(
+                    modifier = Modifier
+                        .width(500.dp)
+                        .wrapContentHeight()
+                ) {
+                    Column (
+                        modifier = Modifier.background(Color.Transparent)
+                    ) {
+                        TextField(
+                            value = name,
+                            onValueChange = { name = it },
+                            label = { Text("Name") },
+                            textStyle = TextStyle(
+                                fontFamily = GlacialIndifference,
+                                fontSize = 24.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = DenimBlue // Text color applied directly here
+                            ),
+                            colors = TextFieldDefaults.textFieldColors(
+                                containerColor = Color.Transparent,
+                                focusedIndicatorColor = SkyBlue,
+                                unfocusedIndicatorColor = LightDenimBlue,
+                                focusedLabelColor = SkyBlue,
+                                unfocusedLabelColor = LightDenimBlue,
+                                cursorColor = DenimBlue
+                            )
+                        )
+                        TextField(
+                            value = address,
+                            onValueChange = { address = it },
+                            label = { Text("Address") },
+                            textStyle = TextStyle(
+                                fontFamily = GlacialIndifference,
+                                fontSize = 24.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = DenimBlue // Text color applied directly here
+                            ),
+                            colors = TextFieldDefaults.textFieldColors(
+                                containerColor = Color.Transparent,
+                                focusedIndicatorColor = SkyBlue,
+                                unfocusedIndicatorColor = LightDenimBlue,
+                                focusedLabelColor = SkyBlue,
+                                unfocusedLabelColor = LightDenimBlue,
+                                cursorColor = DenimBlue
+                            )
+                        )
+
+                        TextField(
+                            value = contactInfo,
+                            onValueChange = { contactInfo = it },
+                            label = { Text("Contact Info") },
+                            textStyle = TextStyle(
+                                fontFamily = GlacialIndifference,
+                                fontSize = 24.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = DenimBlue // Text color applied directly here
+                            ),
+                            colors = TextFieldDefaults.textFieldColors(
+                                containerColor = Color.Transparent,
+                                focusedIndicatorColor = SkyBlue,
+                                unfocusedIndicatorColor = LightDenimBlue,
+                                focusedLabelColor = SkyBlue,
+                                unfocusedLabelColor = LightDenimBlue,
+                                cursorColor = DenimBlue
+                            )
+                        )
+
+                        TextField(
+                            value = checkInDate,
+                            onValueChange = { checkInDate = it },
+                            label = { Text("Check-In Date") },
+                            textStyle = TextStyle(
+                                fontFamily = GlacialIndifference,
+                                fontSize = 24.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = DenimBlue // Text color applied directly here
+                            ),
+                            colors = TextFieldDefaults.textFieldColors(
+                                containerColor = Color.Transparent,
+                                focusedIndicatorColor = SkyBlue,
+                                unfocusedIndicatorColor = LightDenimBlue,
+                                focusedLabelColor = SkyBlue,
+                                unfocusedLabelColor = LightDenimBlue,
+                                cursorColor = DenimBlue
+                            )
+                        )
+
+                        TextField(
+                            value = checkOutDate,
+                            onValueChange = { checkOutDate = it },
+                            label = { Text("Check-Out Date") },
+                            textStyle = TextStyle(
+                                fontFamily = GlacialIndifference,
+                                fontSize = 24.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = DenimBlue // Text color applied directly here
+                            ),
+                            colors = TextFieldDefaults.textFieldColors(
+                                containerColor = Color.Transparent,
+                                focusedIndicatorColor = SkyBlue,
+                                unfocusedIndicatorColor = LightDenimBlue,
+                                focusedLabelColor = SkyBlue,
+                                unfocusedLabelColor = LightDenimBlue,
+                                cursorColor = DenimBlue
+                            )
+                        )
+
+                        TextField(
+                            value = reservationNumber,
+                            onValueChange = { reservationNumber = it },
+                            label = { Text("Reservation Number") },
+                            textStyle = TextStyle(
+                                fontFamily = GlacialIndifference,
+                                fontSize = 24.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = DenimBlue // Text color applied directly here
+                            ),
+                            colors = TextFieldDefaults.textFieldColors(
+                                containerColor = Color.Transparent,
+                                focusedIndicatorColor = SkyBlue,
+                                unfocusedIndicatorColor = LightDenimBlue,
+                                focusedLabelColor = SkyBlue,
+                                unfocusedLabelColor = LightDenimBlue,
+                                cursorColor = DenimBlue
+                            )
+                        )
+                    }
+                }
+            },
+            confirmButton = {},
+            dismissButton = {}
         )
     }
 }
@@ -899,7 +899,6 @@ fun EditAccommodationDialogPreview() {
         onSubmit = { /* Do nothing for preview */ }
     )
 }
-
 
 
 

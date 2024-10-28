@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import ph.edu.auf.dimarucut.jayzel.jetsetgo.models.Activity
+import ph.edu.auf.dimarucut.jayzel.jetsetgo.models.PackingItem
 import ph.edu.auf.dimarucut.jayzel.jetsetgo.models.Trip
 
 class SharedViewModel : ViewModel() {
@@ -45,4 +46,15 @@ class SharedViewModel : ViewModel() {
     fun setCountryCode(countryCode: String) {
         _countryCode.value = countryCode
     }
+
+    // In `SharedViewModel.kt`
+fun updatePackingChecklist(tripId: String, updatedChecklist: List<PackingItem>) {
+    _trips.value = _trips.value?.map { trip ->
+        if (trip.id == tripId) {
+            trip.copy(packingChecklist = updatedChecklist)
+        } else {
+            trip
+        }
+    }
+}
 }

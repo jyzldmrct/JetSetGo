@@ -18,6 +18,7 @@ val LightBlue = Color(0xFFC1DAFA)
 val SkyBlue = Color(0xFF03A9F4)
 val DirtyWhite = Color(0xFFF5F5F5)
 val LightDenimBlue = Color(0xFF48596E)
+val LightSkyBlue = Color(0xFF87CEFA)
 
 
 val LightSunsetOrange = Color(0xFFFF9A9A)

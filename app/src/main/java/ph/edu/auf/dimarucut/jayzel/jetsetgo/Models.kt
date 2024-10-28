@@ -4,7 +4,6 @@ import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 import java.util.UUID
 
-data class  Main (val id: String, val name: String, val destination: String)
 data class Flight(val id: String, val name: String, val destination: String)
 
 data class Trip(
@@ -96,4 +95,17 @@ data class Activity(
     val description: String,
     val destination: String,
     val countryCode: String
+)
+
+data class WeatherResponse(
+    val main: Main,
+    val weather: List<Weather>
+)
+
+data class Main(
+    val temp: Double
+)
+
+data class Weather(
+    val description: String
 )
