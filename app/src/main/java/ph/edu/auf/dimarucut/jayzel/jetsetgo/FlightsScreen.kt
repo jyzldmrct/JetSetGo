@@ -919,14 +919,15 @@ fun BudgetCalculator(budgetDetails: BudgetDetails, countryCode: String) {
     var isExpanded by remember { mutableStateOf(false) }
     var isAddingExpense by remember { mutableStateOf(false) }
 
-
+    var totalBudgetError by remember { mutableStateOf<String?>(null) }
+    var expenseCostError by remember { mutableStateOf<String?>(null) }
 
     // Get currency symbol based on the country code
     val locale = Locale("", countryCode)
     val currencySymbol = Currency.getInstance(locale).symbol
 
     val totalExpenses = expenses.sumOf { it.cost }
-    val remainingBudget = totalBudget - expenses.sumOf { it.cost }
+    val remainingBudget = totalBudget - totalExpenses
 
     Box(
         modifier = Modifier
@@ -940,11 +941,11 @@ fun BudgetCalculator(budgetDetails: BudgetDetails, countryCode: String) {
                 .fillMaxWidth()
                 .fillMaxHeight()
                 .padding(8.dp),
-            contentAlignment = Alignment.Center  // Centers the content inside the Box
+            contentAlignment = Alignment.Center
         ) {
             Column(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally  // Centers the content inside the Column
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
                     text = "Balance Left:",
@@ -963,7 +964,6 @@ fun BudgetCalculator(budgetDetails: BudgetDetails, countryCode: String) {
         }
     }
 
-    // Show dialog if isExpanded is true
     if (isExpanded) {
         AlertDialog(
             onDismissRequest = { isExpanded = false },
@@ -997,15 +997,13 @@ fun BudgetCalculator(budgetDetails: BudgetDetails, countryCode: String) {
                 ) {
                     TextField(
                         value = totalBudget.toString(),
-                        onValueChange = { totalBudget = it.toDoubleOrNull() ?: 0.0 },
-                        label = { Text("Total Budget",
-                            fontFamily = GlacialIndifference,
-                            fontSize = 16.sp
-                        ) },
-                        textStyle = TextStyle(
-                            fontFamily = GlacialIndifference,
-                            fontSize = 24.sp
-                        ),
+                        onValueChange = {
+                            totalBudget = it.toDoubleOrNull() ?: 0.0
+                            totalBudgetError = if (totalBudget < 0) "Total budget cannot be negative" else null
+                        },
+                        label = { Text("Total Budget", fontFamily = GlacialIndifference, fontSize = 16.sp) },
+                        textStyle = TextStyle(fontFamily = GlacialIndifference, fontSize = 24.sp),
+                        isError = totalBudgetError != null,
                         colors = TextFieldDefaults.textFieldColors(
                             containerColor = Color.Transparent,
                             focusedIndicatorColor = SkyBlue,
@@ -1015,21 +1013,15 @@ fun BudgetCalculator(budgetDetails: BudgetDetails, countryCode: String) {
                             cursorColor = DenimBlue
                         )
                     )
+                    totalBudgetError?.let { Text(text = it, color = Color.Red, fontSize = 12.sp, modifier = Modifier.padding(start = 16.dp)) }
                     Spacer(modifier = Modifier.height(8.dp))
 
                     if (isAddingExpense) {
-
                         TextField(
                             value = expenseName,
                             onValueChange = { expenseName = it },
-                            label = { Text("Expense Name",
-                                fontFamily = GlacialIndifference,
-                                fontSize = 16.sp) },
-
-                            textStyle = TextStyle(
-                                fontFamily = GlacialIndifference,
-                                fontSize = 24.sp
-                            ),
+                            label = { Text("Expense Name", fontFamily = GlacialIndifference, fontSize = 16.sp) },
+                            textStyle = TextStyle(fontFamily = GlacialIndifference, fontSize = 24.sp),
                             colors = TextFieldDefaults.textFieldColors(
                                 containerColor = Color.Transparent,
                                 focusedIndicatorColor = SkyBlue,
@@ -1039,20 +1031,22 @@ fun BudgetCalculator(budgetDetails: BudgetDetails, countryCode: String) {
                                 cursorColor = DenimBlue
                             )
                         )
-
                         Spacer(modifier = Modifier.height(8.dp))
 
                         TextField(
                             value = expenseCost,
-                            onValueChange = { expenseCost = it },
-                            label = { Text("Expense Cost",
-                                fontFamily = GlacialIndifference,
-                                fontSize = 16.sp) },
-
-                            textStyle = TextStyle(
-                                fontFamily = GlacialIndifference,
-                                fontSize = 24.sp
-                            ),
+                            onValueChange = {
+                                expenseCost = it
+                                val cost = expenseCost.toDoubleOrNull() ?: 0.0
+                                expenseCostError = when {
+                                    cost < 0 -> "Expense cost cannot be negative"
+                                    cost > remainingBudget -> "Expense cost cannot exceed remaining budget"
+                                    else -> null
+                                }
+                            },
+                            label = { Text("Expense Cost", fontFamily = GlacialIndifference, fontSize = 16.sp) },
+                            textStyle = TextStyle(fontFamily = GlacialIndifference, fontSize = 24.sp),
+                            isError = expenseCostError != null,
                             colors = TextFieldDefaults.textFieldColors(
                                 containerColor = Color.Transparent,
                                 focusedIndicatorColor = SkyBlue,
@@ -1062,42 +1056,34 @@ fun BudgetCalculator(budgetDetails: BudgetDetails, countryCode: String) {
                                 cursorColor = DenimBlue
                             )
                         )
-
+                        expenseCostError?.let { Text(text = it, color = Color.Red, fontSize = 12.sp, modifier = Modifier.padding(start = 16.dp)) }
                         Spacer(modifier = Modifier.height(8.dp))
 
-                        Button(onClick = {
-                            val cost = expenseCost.toDoubleOrNull() ?: 0.0
-                            if (expenseName.isNotBlank() && cost > 0.0) {
-                                expenses = expenses + BudgetItem(expenseName, cost)
-                                expenseName = ""
-                                expenseCost = ""
-                                isAddingExpense = false
-                            }
-                        },     colors = ButtonDefaults.buttonColors(containerColor = SkyBlue)
-
+                        Button(
+                            onClick = {
+                                val cost = expenseCost.toDoubleOrNull() ?: 0.0
+                                if (expenseName.isNotBlank() && cost > 0.0 && cost <= remainingBudget) {
+                                    expenses = expenses + BudgetItem(expenseName, cost)
+                                    expenseName = ""
+                                    expenseCost = ""
+                                    isAddingExpense = false
+                                } else {
+                                    expenseCostError = "Expense cost must be a positive number and within the remaining budget"
+                                }
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = SkyBlue)
                         ) {
-                            Text(
-                                "Add Expense",
-                                fontFamily = PaytoneOne,
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color.White
-                            )
+                            Text("Add Expense", fontFamily = PaytoneOne, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White)
                         }
-
                         Spacer(modifier = Modifier.height(8.dp))
                     }
 
                     if (!isAddingExpense) {
-                        Button(onClick = { isAddingExpense = true },
+                        Button(
+                            onClick = { isAddingExpense = true },
                             colors = ButtonDefaults.buttonColors(containerColor = SkyBlue)
                         ) {
-                            Text("Add More Expenses",
-                                fontFamily = PaytoneOne,
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color.White
-                            )
+                            Text("Add More Expenses", fontFamily = PaytoneOne, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White)
                         }
                     }
 
@@ -1107,7 +1093,8 @@ fun BudgetCalculator(budgetDetails: BudgetDetails, countryCode: String) {
 
                     LazyColumn {
                         items(expenses) { expense ->
-                            Text(text = "${expense.name}: $currencySymbol${expense.cost}",
+                            Text(
+                                text = "${expense.name}: $currencySymbol${expense.cost}",
                                 fontFamily = GlacialIndifference,
                                 fontSize = 20.sp,
                                 fontWeight = FontWeight.Bold
@@ -1130,14 +1117,11 @@ fun BudgetCalculator(budgetDetails: BudgetDetails, countryCode: String) {
                 }
             },
             confirmButton = {
-                Button(onClick = { isExpanded = false },
+                Button(
+                    onClick = { isExpanded = false },
                     colors = ButtonDefaults.buttonColors(containerColor = LightDenimBlue)
                 ) {
-                    Text("Close",
-                        fontFamily = PaytoneOne,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White)
+                    Text("Close", fontFamily = PaytoneOne, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White)
                 }
             }
         )
