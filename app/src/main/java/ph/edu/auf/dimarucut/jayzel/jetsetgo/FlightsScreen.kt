@@ -1472,7 +1472,49 @@ fun AddTripDialog(
     var startDate by remember { mutableStateOf("") }
     var endDate by remember { mutableStateOf("") }
     var countryCode by remember { mutableStateOf("") }
+
+    var destinationError by remember { mutableStateOf<String?>(null) }
+    var startDateError by remember { mutableStateOf<String?>(null) }
+    var endDateError by remember { mutableStateOf<String?>(null) }
+    var countryCodeError by remember { mutableStateOf<String?>(null) }
+
     val context = LocalContext.current
+
+    fun validateInputs(): Boolean {
+        val datePattern = Regex("\\d{4}-\\d{2}-\\d{2}")
+        val destinationPattern = Regex("^[a-zA-Z\\s]+$")
+        val countryCodePattern = Regex("^[a-zA-Z\\s]+$")
+
+
+        destinationError = when {
+            destination.isBlank() -> "Destination cannot be empty"
+            destination.all { it.isDigit() } -> "Destination cannot be a number"
+            !destinationPattern.matches(destination) -> "Destination cannot contain symbols"
+            else -> null
+        }
+
+        startDateError = when {
+            startDate.isBlank() -> "Departure date cannot be empty"
+            !datePattern.matches(startDate) -> "Departure date must be in YYYY-MM-DD format"
+            else -> null
+        }
+
+        endDateError = when {
+            endDate.isBlank() -> "Return date cannot be empty"
+            !datePattern.matches(endDate) -> "Return date must be in YYYY-MM-DD format"
+            else -> null
+        }
+
+        countryCodeError = when {
+            countryCode.isBlank() -> "Country code cannot be empty"
+            countryCode.all { it.isDigit() } -> "Country code cannot be a number"
+            !countryCodePattern.matches(countryCode) -> "Destination cannot contain symbols"
+            countryCode.length != 2 || !countryCode.all { it.isLetter() } -> "Country code must consist of exactly 2 letters"
+            else -> null
+        }
+
+        return listOf(destinationError, startDateError, endDateError, countryCodeError).all { it == null }
+    }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -1481,8 +1523,10 @@ fun AddTripDialog(
                 modifier = Modifier.fillMaxWidth(),
                 contentAlignment = Alignment.Center
             ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.padding(0.dp)) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.padding(0.dp)
+                ) {
                     HorizontalDivider(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -1510,14 +1554,8 @@ fun AddTripDialog(
                 TextField(
                     value = destination,
                     onValueChange = { destination = it },
-                    label = {
-                        Text(
-                            "Destination",
-                            fontFamily = GlacialIndifference,
-                            fontSize = 16.sp,
-                            modifier = Modifier.padding(top = 0.dp)
-                        )
-                    },
+                    label = { Text("Destination", fontFamily = GlacialIndifference, fontSize = 16.sp) },
+                    isError = destinationError != null,
                     shape = RoundedCornerShape(8.dp),
                     colors = TextFieldDefaults.textFieldColors(
                         containerColor = Color.Transparent,
@@ -1534,16 +1572,21 @@ fun AddTripDialog(
                         color = DenimBlue
                     )
                 )
+                destinationError?.let {
+                    Text(
+                        text = it,
+                        color = Color.Red,
+                        fontSize = 12.sp,
+                        modifier = Modifier.padding(start = 16.dp)
+                    )
+                }
+
+                // Repeat for startDate, endDate, and countryCode
                 TextField(
                     value = startDate,
                     onValueChange = { startDate = it },
-                    label = {
-                        Text(
-                            "Departure Date",
-                            fontFamily = GlacialIndifference,
-                            fontSize = 16.sp
-                        )
-                    },
+                    label = { Text("Departure Date", fontFamily = GlacialIndifference, fontSize = 16.sp) },
+                    isError = startDateError != null,
                     shape = RoundedCornerShape(8.dp),
                     colors = TextFieldDefaults.textFieldColors(
                         containerColor = Color.Transparent,
@@ -1560,16 +1603,21 @@ fun AddTripDialog(
                         color = DenimBlue
                     )
                 )
+                startDateError?.let {
+                    Text(
+                        text = it,
+                        color = Color.Red,
+                        fontSize = 12.sp,
+                        modifier = Modifier.padding(start = 16.dp)
+                    )
+                }
+
+                // End Date
                 TextField(
                     value = endDate,
                     onValueChange = { endDate = it },
-                    label = {
-                        Text(
-                            "Return Date",
-                            fontFamily = GlacialIndifference,
-                            fontSize = 16.sp
-                        )
-                    },
+                    label = { Text("Return Date", fontFamily = GlacialIndifference, fontSize = 16.sp) },
+                    isError = endDateError != null,
                     shape = RoundedCornerShape(8.dp),
                     colors = TextFieldDefaults.textFieldColors(
                         containerColor = Color.Transparent,
@@ -1586,16 +1634,21 @@ fun AddTripDialog(
                         color = DenimBlue
                     )
                 )
+                endDateError?.let {
+                    Text(
+                        text = it,
+                        color = Color.Red,
+                        fontSize = 12.sp,
+                        modifier = Modifier.padding(start = 16.dp)
+                    )
+                }
+
+                // Country Code
                 TextField(
                     value = countryCode,
                     onValueChange = { countryCode = it },
-                    label = {
-                        Text(
-                            "Country Code",
-                            fontFamily = GlacialIndifference,
-                            fontSize = 16.sp
-                        )
-                    },
+                    label = { Text("Country Code", fontFamily = GlacialIndifference, fontSize = 16.sp) },
+                    isError = countryCodeError != null,
                     shape = RoundedCornerShape(8.dp),
                     colors = TextFieldDefaults.textFieldColors(
                         containerColor = Color.Transparent,
@@ -1612,29 +1665,41 @@ fun AddTripDialog(
                         color = DenimBlue
                     )
                 )
+                countryCodeError?.let {
+                    Text(
+                        text = it,
+                        color = Color.Red,
+                        fontSize = 12.sp,
+                        modifier = Modifier.padding(start = 16.dp)
+                    )
+                }
             }
         },
         confirmButton = {
-            Button(onClick = {
-                val trip = Trip(
-                    id = UUID.randomUUID().toString(),
-                    destination = destination,
-                    startDate = startDate,
-                    endDate = endDate,
-                    countryCode = countryCode,
-                    transportationOptions = emptyList(), // Initialize as empty
-                    budgetDetails = BudgetDetails(0.0, emptyList()),
-                    packingChecklist = emptyList()
-                )
-                onSubmit(trip)
-                sharedViewModel.addTrip(trip) // Ensure trip is added to SharedViewModel
-                Toast.makeText(context, "Trip added!", Toast.LENGTH_SHORT).show()
-                onDismiss()
-            },
-                colors = ButtonDefaults.buttonColors(containerColor = SunsetOrange) ) {
+            Button(
+                onClick = {
+                    if (validateInputs()) {
+                        val trip = Trip(
+                            id = UUID.randomUUID().toString(),
+                            destination = destination,
+                            startDate = startDate,
+                            endDate = endDate,
+                            countryCode = countryCode,
+                            transportationOptions = emptyList(),
+                            budgetDetails = BudgetDetails(0.0, emptyList()),
+                            packingChecklist = emptyList()
+                        )
+                        onSubmit(trip)
+                        sharedViewModel.addTrip(trip)
+                        Toast.makeText(context, "Trip added!", Toast.LENGTH_SHORT).show()
+                        onDismiss()
+                    }
+                },
+                colors = ButtonDefaults.buttonColors(containerColor = SunsetOrange)
+            ) {
                 Text(
                     "Add Trip",
-                    fontFamily = PaytoneOne, // Apply custom font
+                    fontFamily = PaytoneOne,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.White
@@ -1642,20 +1707,22 @@ fun AddTripDialog(
             }
         },
         dismissButton = {
-            Button(onClick = onDismiss,
-                colors = ButtonDefaults.buttonColors(containerColor = LightDenimBlue) ) {
+            Button(
+                onClick = onDismiss,
+                colors = ButtonDefaults.buttonColors(containerColor = LightDenimBlue)
+            ) {
                 Text(
                     "Cancel",
                     fontFamily = PaytoneOne,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.White
-
                 )
             }
         }
     )
 }
+
 
 @Preview(showBackground = true)
 @Composable
