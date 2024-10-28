@@ -38,6 +38,7 @@ import java.util.UUID
 import androidx.compose.ui.text.font.FontWeight
 import java.util.Currency
 import java.util.Locale
+import java.time.LocalDate
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
@@ -693,7 +694,52 @@ fun EditTripDialog(trip: Trip, onDismiss: () -> Unit, onSubmit: (Trip) -> Unit) 
     var endDate by remember { mutableStateOf(trip.endDate) }
     var countryCode by remember { mutableStateOf(trip.countryCode) }
 
+    var destinationError by remember { mutableStateOf<String?>(null) }
+    var startDateError by remember { mutableStateOf<String?>(null) }
+    var endDateError by remember { mutableStateOf<String?>(null) }
+    var countryCodeError by remember { mutableStateOf<String?>(null) }
+
     val context = LocalContext.current
+
+fun validateInputs(): Boolean {
+    val datePattern = Regex("\\d{4}-\\d{2}-\\d{2}")
+    val destinationPattern = Regex("^[a-zA-Z\\s]+$")
+
+    destinationError = when {
+        destination.isBlank() -> "Destination cannot be empty"
+        destination.all { it.isDigit() } -> "Destination cannot be a number"
+        !destinationPattern.matches(destination) -> "Destination cannot contain symbols"
+        else -> null
+    }
+
+    startDateError = when {
+        startDate.isBlank() -> "Departure date cannot be empty"
+        !datePattern.matches(startDate) -> "Departure date must be in YYYY-MM-DD format"
+        else -> null
+    }
+
+    endDateError = when {
+        endDate.isBlank() -> "Return date cannot be empty"
+        !datePattern.matches(endDate) -> "Return date must be in YYYY-MM-DD format"
+        else -> null
+    }
+
+    if (startDateError == null && endDateError == null) {
+        val startLocalDate = LocalDate.parse(startDate)
+        val endLocalDate = LocalDate.parse(endDate)
+        if (endLocalDate.isBefore(startLocalDate)) {
+            endDateError = "Return date cannot be earlier than the departure date"
+        }
+    }
+
+    countryCodeError = when {
+        countryCode.isBlank() -> "Country code cannot be empty"
+        countryCode.length != 2 || !countryCode.all { it.isLetter() } -> "Country code must consist of exactly 2 letters"
+        else -> null
+    }
+
+    return listOf(destinationError, startDateError, endDateError, countryCodeError).all { it == null }
+}
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -724,14 +770,16 @@ fun EditTripDialog(trip: Trip, onDismiss: () -> Unit, onSubmit: (Trip) -> Unit) 
                             modifier = Modifier
                                 .size(24.dp)
                                 .clickable {
-                                    val updatedTrip = trip.copy(
-                                        destination = destination,
-                                        startDate = startDate,
-                                        endDate = endDate,
-                                        countryCode = countryCode
-                                    )
-                                    onSubmit(updatedTrip)
-                                    Toast.makeText(context, "Trip updated!", Toast.LENGTH_SHORT).show()
+                                    if (validateInputs()) {
+                                        val updatedTrip = trip.copy(
+                                            destination = destination,
+                                            startDate = startDate,
+                                            endDate = endDate,
+                                            countryCode = countryCode
+                                        )
+                                        onSubmit(updatedTrip)
+                                        Toast.makeText(context, "Trip updated!", Toast.LENGTH_SHORT).show()
+                                    }
                                 },
                             tint = SkyBlue
                         )
@@ -764,18 +812,19 @@ fun EditTripDialog(trip: Trip, onDismiss: () -> Unit, onSubmit: (Trip) -> Unit) 
                     .width(500.dp)
                     .wrapContentHeight()
             ) {
-                Column (
+                Column(
                     modifier = Modifier.background(Color.Transparent)
                 ) {
                     TextField(
                         value = destination,
                         onValueChange = { destination = it },
                         label = { Text("Destination") },
+                        isError = destinationError != null,
                         textStyle = TextStyle(
                             fontFamily = GlacialIndifference,
                             fontSize = 24.sp,
                             fontWeight = FontWeight.Bold,
-                            color = DenimBlue // Text color applied directly here
+                            color = DenimBlue
                         ),
                         colors = TextFieldDefaults.textFieldColors(
                             containerColor = Color.Transparent,
@@ -786,10 +835,13 @@ fun EditTripDialog(trip: Trip, onDismiss: () -> Unit, onSubmit: (Trip) -> Unit) 
                             cursorColor = DenimBlue
                         )
                     )
+                    destinationError?.let { Text(text = it, color = Color.Red, fontSize = 12.sp, modifier = Modifier.padding(start = 16.dp)) }
+
                     TextField(
                         value = startDate,
                         onValueChange = { startDate = it },
                         label = { Text("Departure Date") },
+                        isError = startDateError != null,
                         textStyle = TextStyle(
                             fontFamily = GlacialIndifference,
                             fontSize = 24.sp,
@@ -805,10 +857,13 @@ fun EditTripDialog(trip: Trip, onDismiss: () -> Unit, onSubmit: (Trip) -> Unit) 
                             cursorColor = DenimBlue
                         )
                     )
+                    startDateError?.let { Text(text = it, color = Color.Red, fontSize = 12.sp, modifier = Modifier.padding(start = 16.dp)) }
+
                     TextField(
                         value = endDate,
                         onValueChange = { endDate = it },
                         label = { Text("Return Date") },
+                        isError = endDateError != null,
                         textStyle = TextStyle(
                             fontFamily = GlacialIndifference,
                             fontSize = 24.sp,
@@ -824,10 +879,13 @@ fun EditTripDialog(trip: Trip, onDismiss: () -> Unit, onSubmit: (Trip) -> Unit) 
                             cursorColor = DenimBlue
                         )
                     )
+                    endDateError?.let { Text(text = it, color = Color.Red, fontSize = 12.sp, modifier = Modifier.padding(start = 16.dp)) }
+
                     TextField(
                         value = countryCode,
                         onValueChange = { countryCode = it },
                         label = { Text("Country Code") },
+                        isError = countryCodeError != null,
                         textStyle = TextStyle(
                             fontFamily = GlacialIndifference,
                             fontSize = 24.sp,
@@ -843,6 +901,7 @@ fun EditTripDialog(trip: Trip, onDismiss: () -> Unit, onSubmit: (Trip) -> Unit) 
                             cursorColor = DenimBlue
                         )
                     )
+                    countryCodeError?.let { Text(text = it, color = Color.Red, fontSize = 12.sp, modifier = Modifier.padding(start = 16.dp)) }
                 }
             }
         },
@@ -1480,41 +1539,45 @@ fun AddTripDialog(
 
     val context = LocalContext.current
 
-    fun validateInputs(): Boolean {
-        val datePattern = Regex("\\d{4}-\\d{2}-\\d{2}")
-        val destinationPattern = Regex("^[a-zA-Z\\s]+$")
-        val countryCodePattern = Regex("^[a-zA-Z\\s]+$")
+   fun validateInputs(): Boolean {
+    val datePattern = Regex("\\d{4}-\\d{2}-\\d{2}")
+    val destinationPattern = Regex("^[a-zA-Z\\s]+$")
 
-
-        destinationError = when {
-            destination.isBlank() -> "Destination cannot be empty"
-            destination.all { it.isDigit() } -> "Destination cannot be a number"
-            !destinationPattern.matches(destination) -> "Destination cannot contain symbols"
-            else -> null
-        }
-
-        startDateError = when {
-            startDate.isBlank() -> "Departure date cannot be empty"
-            !datePattern.matches(startDate) -> "Departure date must be in YYYY-MM-DD format"
-            else -> null
-        }
-
-        endDateError = when {
-            endDate.isBlank() -> "Return date cannot be empty"
-            !datePattern.matches(endDate) -> "Return date must be in YYYY-MM-DD format"
-            else -> null
-        }
-
-        countryCodeError = when {
-            countryCode.isBlank() -> "Country code cannot be empty"
-            countryCode.all { it.isDigit() } -> "Country code cannot be a number"
-            !countryCodePattern.matches(countryCode) -> "Destination cannot contain symbols"
-            countryCode.length != 2 || !countryCode.all { it.isLetter() } -> "Country code must consist of exactly 2 letters"
-            else -> null
-        }
-
-        return listOf(destinationError, startDateError, endDateError, countryCodeError).all { it == null }
+    destinationError = when {
+        destination.isBlank() -> "Destination cannot be empty"
+        destination.all { it.isDigit() } -> "Destination cannot be a number"
+        !destinationPattern.matches(destination) -> "Destination cannot contain symbols"
+        else -> null
     }
+
+    startDateError = when {
+        startDate.isBlank() -> "Departure date cannot be empty"
+        !datePattern.matches(startDate) -> "Departure date must be in YYYY-MM-DD format"
+        else -> null
+    }
+
+    endDateError = when {
+        endDate.isBlank() -> "Return date cannot be empty"
+        !datePattern.matches(endDate) -> "Return date must be in YYYY-MM-DD format"
+        else -> null
+    }
+
+    if (startDateError == null && endDateError == null) {
+        val startLocalDate = LocalDate.parse(startDate)
+        val endLocalDate = LocalDate.parse(endDate)
+        if (endLocalDate.isBefore(startLocalDate)) {
+            endDateError = "Return date cannot be earlier than the departure date"
+        }
+    }
+
+    countryCodeError = when {
+        countryCode.isBlank() -> "Country code cannot be empty"
+        countryCode.length != 2 || !countryCode.all { it.isLetter() } -> "Country code must consist of exactly 2 letters"
+        else -> null
+    }
+
+    return listOf(destinationError, startDateError, endDateError, countryCodeError).all { it == null }
+}
 
     AlertDialog(
         onDismissRequest = onDismiss,
